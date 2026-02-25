@@ -1,0 +1,75 @@
+﻿@page
+@model AccountingSystem.Pages.ChartOfAccounts.CreateModel
+@using AccountingSystem.Models
+@{
+    ViewData["Title"] = "Add Account";
+}
+
+<h2>Add Account</h2>
+
+<form method="post">
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label class="form-label">Account Name</label>
+            <input class="form-control" asp-for="Account.AccountName" />
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <label class="form-label">Account Number</label>
+            <input class="form-control" asp-for="Account.AccountNumber" />
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Description</label>
+        <textarea class="form-control" asp-for="Account.Description"></textarea>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <label class="form-label">Normal Side</label>
+            <select class="form-select" asp-for="Account.NormalSide" asp-items="Html.GetEnumSelectList<NormalSide>()"></select>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <label class="form-label">Category</label>
+            <select class="form-select" asp-for="Account.Category" asp-items="Html.GetEnumSelectList<AccountCategory>()"></select>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <label class="form-label">Subcategory</label>
+            <input class="form-control" asp-for="Account.Subcategory" />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <label class="form-label">Initial Balance</label>
+            <input class="form-control" asp-for="Account.InitialBalance" />
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <label class="form-label">Order</label>
+            <input class="form-control" asp-for="Account.OrderCode" />
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <label class="form-label">Statement</label>
+            <select class="form-select" asp-for="Account.Statement">
+                <option value="BS">BS</option>
+                <option value="IS">IS</option>
+                <option value="RE">RE</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Comment</label>
+        <input class="form-control" asp-for="Account.Comment" />
+    </div>
+
+    <button class="btn btn-primary" type="submit">Save</button>
+    <a class="btn btn-outline-secondary" asp-page="./Index">Cancel</a>
+</form>

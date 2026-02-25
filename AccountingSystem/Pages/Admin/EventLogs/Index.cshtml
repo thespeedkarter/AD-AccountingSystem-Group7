@@ -1,0 +1,118 @@
+﻿@page
+@model AccountingSystem.Pages.Admin.EventLogs.IndexModel
+@using AccountingSystem.Models
+@{
+    ViewData["Title"] = "Event Logs";
+}
+
+<h2>Event Logs</h2>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-3">
+        <input class="form-control" name="Table" value="@Model.Table" placeholder="Table (ex: ChartAccounts)" />
+    </div>
+
+    <div class="col-md-2">
+        <select class="form-select" name="Action">
+            <option value="">All Actions</option>
+            @foreach (var a in Enum.GetValues<EventAction>())
+            {
+                var intVal = (int)a;
+                var selected = Model.Action.HasValue && Model.Action.Value == intVal;
+                <option value="@intVal" selected="@(selected ? "selected" : null)">@a</option>
+            }
+        </select>
+    </div>
+
+    <div class="col-md-2">
+        <input class="form-control" type="date" name="From" value="@(Model.From?.ToString("yyyy-MM-dd"))" />
+    </div>
+
+    <div class="col-md-2">
+        <input class="form-control" type="date" name="To" value="@(Model.To?.ToString("yyyy-MM-dd"))" />
+    </div>
+
+    <div class="col-md-3">
+        <input class="form-control" name="Search" value="@Model.Search" placeholder="Search JSON/user/table" />
+    </div>
+
+    <div class="col-12 d-flex gap-2">
+        <button class="btn btn-primary" type="submit">Apply</button>
+        <a class="btn btn-outline-secondary" asp-page="./Index">Reset</a>
+    </div>
+</form>
+
+@if (Model.Logs.Count == 0)
+{
+    <p>No logs found.</p>
+}
+else
+{
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="text-muted small">
+            Showing page <strong>@Model.PageNumber</strong> of <strong>@Model.TotalPages</strong> (Total: @Model.TotalCount)
+        </div>
+
+        <div class="btn-group">
+            <a class="btn btn-outline-secondary btn-sm @(Model.PageNumber <= 1 ? "disabled" : "")"
+               asp-page="./Index"
+               asp-route-PageNumber="@(Model.PageNumber - 1)"
+               asp-route-Table="@Model.Table"
+               asp-route-Action="@Model.Action"
+               asp-route-From="@(Model.From?.ToString("yyyy-MM-dd"))"
+               asp-route-To="@(Model.To?.ToString("yyyy-MM-dd"))"
+               asp-route-Search="@Model.Search">
+                Prev
+            </a>
+
+            <a class="btn btn-outline-secondary btn-sm @(Model.PageNumber >= Model.TotalPages ? "disabled" : "")"
+               asp-page="./Index"
+               asp-route-PageNumber="@(Model.PageNumber + 1)"
+               asp-route-Table="@Model.Table"
+               asp-route-Action="@Model.Action"
+               asp-route-From="@(Model.From?.ToString("yyyy-MM-dd"))"
+               asp-route-To="@(Model.To?.ToString("yyyy-MM-dd"))"
+               asp-route-Search="@Model.Search">
+                Next
+            </a>
+        </div>
+    </div>
+
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>When</th>
+                <th>Table</th>
+                <th>Record</th>
+                <th>Action</th>
+                <th>UserId</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var l in Model.Logs)
+            {
+                <tr>
+                    <td>@l.CreatedAtUtc.ToLocalTime()</td>
+                    <td>@l.TableName</td>
+                    <td>@l.RecordId</td>
+                    <td>@((EventAction)l.Action)</td>
+                    <td>@l.UserId</td>
+                </tr>
+
+                @* optional expandable JSON *@
+                <tr>
+                    <td colspan="5" class="small">
+                        @if (!string.IsNullOrWhiteSpace(l.BeforeJson))
+                        {
+                            <div><strong>Before:</strong> <code>@l.BeforeJson</code></div>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(l.AfterJson))
+                        {
+                            <div><strong>After:</strong> <code>@l.AfterJson</code></div>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

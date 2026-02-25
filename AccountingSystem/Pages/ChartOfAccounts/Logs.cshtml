@@ -1,0 +1,50 @@
+﻿@page
+@model AccountingSystem.Pages.ChartOfAccounts.LogsModel
+@{
+    ViewData["Title"] = "Chart of Accounts Event Logs";
+}
+
+<h2>Chart of Accounts Event Logs</h2>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-4">
+        <input class="form-control" name="RecordId" value="@Model.RecordId" placeholder="Filter by Account RecordId (optional)" />
+    </div>
+    <div class="col-md-8">
+        <button class="btn btn-primary" type="submit">Apply</button>
+        <a class="btn btn-outline-secondary" asp-page="./Logs">Reset</a>
+    </div>
+</form>
+
+@if (Model.Logs.Count == 0)
+{
+    <p>No logs found.</p>
+}
+else
+{
+    <table class="table table-sm table-striped">
+        <thead>
+            <tr>
+                <th>When (UTC)</th>
+                <th>RecordId</th>
+                <th>Action</th>
+                <th>UserId</th>
+                <th>Before</th>
+                <th>After</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var l in Model.Logs)
+            {
+                <tr>
+                    <td>@l.CreatedAtUtc</td>
+                    <td>@l.RecordId</td>
+                    <td>@l.Action</td>
+                    <td>@l.UserId</td>
+                    <td><pre style="max-width:380px; white-space:pre-wrap;">@l.BeforeJson</pre></td>
+                    <td><pre style="max-width:380px; white-space:pre-wrap;">@l.AfterJson</pre></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

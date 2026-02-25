@@ -1,0 +1,36 @@
+﻿@page
+@model PrivacyModel
+@{
+    ViewData["Title"] = "Privacy";
+}
+
+<div class="card">
+    <div class="card-body">
+        <h2 class="mb-2">Privacy</h2>
+        <p class="text-muted mb-4">
+            This is a course project application. This page explains how data is handled in the system.
+        </p>
+
+        <h5>Data Stored</h5>
+        <ul class="mb-4">
+            <li>User login information (Identity tables) and role assignments (Administrator, Manager, Accountant).</li>
+            <li>Access requests (first name, last name, address, DOB, email) for administrator approval.</li>
+            <li>Security metadata (password history, password expiration date, suspension windows, active/inactive status).</li>
+            <li>Accounting data: chart of accounts, journal entries, journal lines, ledger entries, attachments metadata.</li>
+        </ul>
+
+        <h5>Attachments</h5>
+        <p class="mb-4">
+            Uploaded documents are stored on the server under the application’s uploads folder and linked to journal entries.
+            Only authenticated users can navigate the application.
+        </p>
+
+        <h5>Access</h5>
+        <ul class="mb-0">
+            <li>Only registered users can log in.</li>
+            <li>Administrators manage users and roles.</li>
+            <li>Managers approve/reject and post entries.</li>
+            <li>Accountants prepare and submit entries.</li>
+        </ul>
+    </div>
+</div>

@@ -1,0 +1,59 @@
+﻿@page
+@model AccountingSystem.Pages.IndexModel
+@using AccountingSystem.Models
+@{
+    ViewData["Title"] = "Home";
+}
+
+<h2>Dashboard</h2>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Notifications</h5>
+
+                @if (User.IsInRole("Manager") && Model.PendingJournalCount > 0)
+                {
+                    <div class="alert alert-warning mb-2">
+                        You have <strong>@Model.PendingJournalCount</strong> journal entries waiting for approval.
+                        <a class="ms-2" asp-page="/Journal/Index" asp-route-Status="@((int)JournalStatus.Pending)">View</a>
+                    </div>
+                }
+
+                @if (User.IsInRole("Manager") && Model.ApprovedNotPostedCount > 0)
+                {
+                    <div class="alert alert-info mb-2">
+                        There are <strong>@Model.ApprovedNotPostedCount</strong> approved entries not posted yet.
+                        <a class="ms-2" asp-page="/Journal/Index" asp-route-Status="@((int)JournalStatus.Approved)">View</a>
+                    </div>
+                }
+
+                @if (Model.RejectedJournalCount > 0)
+                {
+                    <div class="alert alert-secondary mb-0">
+                        Rejected journal entries: <strong>@Model.RejectedJournalCount</strong>.
+                        <a class="ms-2" asp-page="/Journal/Index" asp-route-Status="@((int)JournalStatus.Rejected)">View</a>
+                    </div>
+                }
+
+                @if (Model.PendingJournalCount == 0 && Model.ApprovedNotPostedCount == 0 && Model.RejectedJournalCount == 0)
+                {
+                    <div class="text-muted">No alerts right now.</div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-4">
+        <a class="btn btn-outline-primary w-100" asp-page="/ChartOfAccounts/Index">Chart of Accounts</a>
+    </div>
+    <div class="col-md-4">
+        <a class="btn btn-outline-primary w-100" asp-page="/Journal/Index">Journal</a>
+    </div>
+    <div class="col-md-4">
+        <a class="btn btn-outline-primary w-100" asp-page="/Admin/AccessRequests">Admin: Access Requests</a>
+    </div>
+</div>

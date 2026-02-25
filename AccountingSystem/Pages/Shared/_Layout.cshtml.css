@@ -1,0 +1,93 @@
+﻿/* ===== Shell ===== */
+.app-shell {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #f3f4f6; /* light app background */
+}
+
+/* ===== Header (dark) ===== */
+.app-header {
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+    background: rgba(17, 24, 39, 0.95);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.app-navbar {
+    padding: 0.85rem 0;
+}
+
+.navbar-brand .brand-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: #fff;
+    font-weight: 800;
+    font-size: 0.9rem;
+}
+
+.navbar-brand .brand-text {
+    color: #fff;
+    font-weight: 700;
+}
+
+.app-navbar .nav-link {
+    color: rgba(255, 255, 255, 0.86) !important;
+    border-radius: 10px;
+    padding: 0.45rem 0.7rem;
+}
+
+    .app-navbar .nav-link:hover,
+    .app-navbar .nav-link:focus {
+        color: #fff !important;
+        background: rgba(255, 255, 255, 0.10);
+    }
+
+.app-dropdown {
+    border-radius: 14px;
+    border: 1px solid rgba(0,0,0,0.08);
+    box-shadow: 0 18px 50px rgba(0,0,0,0.20);
+    padding: 0.5rem;
+}
+
+/* ===== Main container ===== */
+.app-container {
+    flex: 1 0 auto;
+    padding-top: 1.25rem;
+    padding-bottom: 2.5rem;
+}
+
+.app-pagehead {
+    margin-bottom: 1rem;
+}
+
+.app-pagehead-inner {
+    padding: 0.8rem 1rem;
+    border-radius: 16px;
+    background: #ffffff;
+    border: 1px solid rgba(0,0,0,0.06);
+}
+
+/* Put all pages on a light card so text is always readable */
+.app-main {
+    padding: 1rem;
+    background: #ffffff;
+    border: 1px solid rgba(0,0,0,0.06);
+    border-radius: 18px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+}
+
+/* ===== Footer ===== */
+.app-footer {
+    flex-shrink: 0;
+    padding: 1.25rem 0;
+    border-top: 1px solid rgba(0,0,0,0.08);
+    background: #ffffff;
+}

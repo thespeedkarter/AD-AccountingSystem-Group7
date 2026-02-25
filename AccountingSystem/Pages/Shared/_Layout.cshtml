@@ -1,0 +1,104 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - AccountingSystem</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/AccountingSystem.styles.css" asp-append-version="true" />
+</head>
+
+<body class="app-shell">
+    <header class="app-header">
+        <nav class="navbar navbar-expand-lg app-navbar">
+            <div class="container">
+                <a class="navbar-brand d-flex align-items-center gap-2" asp-area="" asp-page="/Index">
+                    <span class="brand-mark">AS</span>
+                    <span class="brand-text">AccountingSystem</span>
+                </a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+                        aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="mainNav">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-page="/Index">Home</a>
+                        </li>
+
+                        @if (User.Identity?.IsAuthenticated ?? false)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-page="/Dashboard">Dashboard</a>
+                            </li>
+
+                            @if (User.IsInRole("Manager") || User.IsInRole("Accountant") || User.IsInRole("Administrator"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-area="" asp-page="/ChartOfAccounts/Index">Chart of Accounts</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-area="" asp-page="/Journal/Index">Journal</a>
+                                </li>
+                            }
+
+                            @if (User.IsInRole("Administrator"))
+                            {
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        Admin
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-menu-end app-dropdown">
+                                        <li><a class="dropdown-item" asp-area="" asp-page="/Admin/AccessRequests">Access Requests</a></li>
+                                        <li><a class="dropdown-item" asp-area="" asp-page="/Admin/ExpiredPasswords">Expired Passwords</a></li>
+                                        <li><a class="dropdown-item" asp-area="" asp-page="/Admin/SuspendUser">Suspend User</a></li>
+                                        <li><hr class="dropdown-divider" /></li>
+                                        <li><a class="dropdown-item" asp-area="" asp-page="/Admin/EventLogs/Index">Event Logs</a></li>
+                                    </ul>
+                                </li>
+                            }
+                        }
+
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-page="/Help/Index">Help</a>
+                        </li>
+                    </ul>
+
+                    <div class="d-flex align-items-center">
+                        <partial name="_LoginPartial" />
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container app-container">
+        <div class="app-pagehead">
+            <div class="app-pagehead-inner">
+                <div class="small text-muted">@ViewData["Title"]</div>
+            </div>
+        </div>
+
+        <main role="main" class="app-main">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="app-footer">
+        <div class="container d-flex flex-column flex-md-row justify-content-between gap-2">
+            <div class="text-muted small">&copy; 2026 - AccountingSystem</div>
+            <div class="small"><a class="link-secondary" asp-area="" asp-page="/Privacy">Privacy</a></div>
+        </div>
+    </footer>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+
+</body>
+</html>

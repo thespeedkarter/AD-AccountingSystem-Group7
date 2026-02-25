@@ -1,0 +1,56 @@
+﻿@page "{id:int}"
+@model AccountingSystem.Pages.Admin.EventLogs.ViewModel
+
+@{
+    ViewData["Title"] = "Event Log";
+}
+
+<h2>Event Log #@Model.Log.EventLogId</h2>
+
+<div class="mb-3">
+    <a class="btn btn-outline-secondary" asp-page="./Index">Back</a>
+</div>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <div><strong>When:</strong> @Model.Log.CreatedAtUtc.ToLocalTime()</div>
+        <div><strong>Table:</strong> @Model.Log.TableName</div>
+        <div><strong>RecordId:</strong> @Model.Log.RecordId</div>
+        <div><strong>Action:</strong> @Model.ActionLabel(Model.Log.Action)</div>
+        <div><strong>UserId:</strong> <span class="text-muted">@Model.Log.UserId</span></div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">Before</div>
+            <div class="card-body">
+                @if (string.IsNullOrWhiteSpace(Model.Log.BeforeJson))
+                {
+                    <div class="text-muted">No before JSON.</div>
+                }
+                else
+                {
+                    <pre class="small" style="white-space:pre-wrap;word-break:break-word;">@Model.PrettyBefore</pre>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">After</div>
+            <div class="card-body">
+                @if (string.IsNullOrWhiteSpace(Model.Log.AfterJson))
+                {
+                    <div class="text-muted">No after JSON.</div>
+                }
+                else
+                {
+                    <pre class="small" style="white-space:pre-wrap;word-break:break-word;">@Model.PrettyAfter</pre>
+                }
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,17 @@
+﻿# Build outputs
+bin/
+obj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Logs
+*.log
+
+# Local secrets / dev settings
+appsettings.Development.json
+
+# Publish artifacts
+publish/

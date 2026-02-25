@@ -1,0 +1,119 @@
+﻿@page
+@model AccountingSystem.Pages.Journal.IndexModel
+@using AccountingSystem.Models
+@{
+    ViewData["Title"] = "Journal";
+}
+
+<h2>Journal</h2>
+
+<div class="mb-3 d-flex gap-2">
+    @if (User.IsInRole("Manager") || User.IsInRole("Accountant"))
+    {
+        <a class="btn btn-primary" asp-page="./Create">+ Create Journal Entry</a>
+    }
+
+    @if (User.IsInRole("Manager"))
+    {
+        <a class="btn btn-outline-secondary" asp-page="/Ledger/Index">View Ledger</a>
+    }
+</div>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-3">
+        <select class="form-select" name="Status">
+            <option value="">All Status</option>
+            @foreach (var s in Enum.GetValues<JournalStatus>())
+            {
+                var selected = Model.Status.HasValue && Model.Status.Value == s;
+                <option value="@((int)s)" selected="@(selected ? "selected" : null)">@s</option>
+            }
+        </select>
+    </div>
+
+    <div class="col-md-2">
+        <input class="form-control" type="date" name="From" value="@(Model.From?.ToString("yyyy-MM-dd"))" />
+    </div>
+
+    <div class="col-md-2">
+        <input class="form-control" type="date" name="To" value="@(Model.To?.ToString("yyyy-MM-dd"))" />
+    </div>
+
+    <div class="col-md-3">
+        <input class="form-control" name="Search" value="@Model.Search" placeholder="Search by account name, amount, or date" />
+    </div>
+
+    <div class="col-md-2">
+        <button class="btn btn-primary w-100" type="submit">Apply</button>
+    </div>
+</form>
+
+@if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+{
+    <div class="alert alert-info">@Model.StatusMessage</div>
+}
+
+<table class="table table-striped table-hover align-middle">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Lines</th>
+            <th class="text-end">Total Debit</th>
+            <th class="text-end">Total Credit</th>
+            <th>Posted?</th>
+            <th class="text-end">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var e in Model.Entries)
+        {
+            var totalD = e.Lines.Sum(l => l.Debit);
+            var totalC = e.Lines.Sum(l => l.Credit);
+
+            var canApprove = User.IsInRole("Manager") && e.Status == JournalStatus.Pending;
+            var canPost = User.IsInRole("Manager") && e.Status == JournalStatus.Approved && e.PostedAtUtc == null;
+
+            <tr>
+                <td>@e.JournalEntryId</td>
+                <td>@e.EntryDate.ToShortDateString()</td>
+                <td>
+                    <span class="badge bg-secondary">@e.Status</span>
+                </td>
+                <td>@e.Lines.Count</td>
+                <td class="text-end">@totalD.ToString("N2")</td>
+                <td class="text-end">@totalC.ToString("N2")</td>
+                <td>
+                    @if (e.PostedAtUtc != null)
+                    {
+                        <span class="badge bg-success">Yes</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-warning text-dark">No</span>
+                    }
+                </td>
+                <td class="text-end">
+                    <a class="btn btn-sm btn-outline-secondary" asp-page="./Details" asp-route-id="@e.JournalEntryId">View</a>
+
+                    @if (canApprove)
+                    {
+                        <a class="btn btn-sm btn-outline-success ms-1" asp-page="./Approve" asp-route-id="@e.JournalEntryId">Approve/Reject</a>
+                    }
+
+                    @if (canPost)
+                    {
+                        <form method="post" asp-page-handler="PostEntry" class="d-inline">
+                            <input type="hidden" name="id" value="@e.JournalEntryId" />
+                            <button type="submit" class="btn btn-sm btn-success ms-1"
+                                    onclick="return confirm('Post this entry? This will write to the ledger.');">
+                                Post
+                            </button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

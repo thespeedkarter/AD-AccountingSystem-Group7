@@ -1,0 +1,105 @@
+﻿@page "{id:int}"
+@model AccountingSystem.Pages.ChartOfAccounts.EditModel
+@using AccountingSystem.Models
+@{
+    ViewData["Title"] = "Edit Account";
+}
+
+<h2>Edit Account</h2>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<form method="post">
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <input type="hidden" asp-for="Account.ChartAccountId" />
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label class="form-label">Account Name</label>
+            <input class="form-control" asp-for="Account.AccountName" />
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <label class="form-label">Account Number</label>
+            <input class="form-control" asp-for="Account.AccountNumber" />
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Description</label>
+        <textarea class="form-control" asp-for="Account.Description"></textarea>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <label class="form-label">Normal Side</label>
+            <select class="form-select" asp-for="Account.NormalSide" asp-items="Html.GetEnumSelectList<NormalSide>()"></select>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <label class="form-label">Category</label>
+            <select class="form-select" asp-for="Account.Category" asp-items="Html.GetEnumSelectList<AccountCategory>()"></select>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <label class="form-label">Subcategory</label>
+            <input class="form-control" asp-for="Account.Subcategory" />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <label class="form-label">Initial Balance</label>
+            <input class="form-control" asp-for="Account.InitialBalance" />
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <label class="form-label">Order</label>
+            <input class="form-control" asp-for="Account.OrderCode" />
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <label class="form-label">Statement</label>
+            <select class="form-select" asp-for="Account.Statement">
+                <option value="BS">BS</option>
+                <option value="IS">IS</option>
+                <option value="RE">RE</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Comment</label>
+        <input class="form-control" asp-for="Account.Comment" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Active</label>
+        <input class="form-check-input" type="checkbox" asp-for="Account.IsActive" />
+    </div>
+
+    <button class="btn btn-primary" type="submit">Save</button>
+    <a class="btn btn-outline-secondary" asp-page="./Index">Back</a>
+</form>
+
+<hr />
+
+@if (Model.Account.IsActive)
+{
+    <form method="post" asp-page-handler="Deactivate">
+        <input type="hidden" name="id" value="@Model.Account.ChartAccountId" />
+        <button class="btn btn-danger" type="submit">Deactivate Account</button>
+        <small class="text-muted ms-2">Cannot deactivate if Balance &gt; 0</small>
+    </form>
+}
+else
+{
+    <form method="post" asp-page-handler="Activate">
+        <input type="hidden" name="id" value="@Model.Account.ChartAccountId" />
+        <button class="btn btn-success" type="submit">Activate Account</button>
+    </form>
+}

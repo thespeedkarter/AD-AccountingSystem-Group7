@@ -1,0 +1,233 @@
+﻿@page "{id:int}"
+@model AccountingSystem.Pages.Journal.DetailsModel
+@using AccountingSystem.Models
+@{
+    ViewData["Title"] = "Journal Entry Details";
+}
+
+<h2>Journal Entry #@Model.Entry.JournalEntryId</h2>
+
+@if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+{
+    <div class="alert alert-success">@Model.StatusMessage</div>
+}
+@if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+
+@{
+    var totalD = Model.Entry.Lines?.Sum(l => l.Debit) ?? 0m;
+    var totalC = Model.Entry.Lines?.Sum(l => l.Credit) ?? 0m;
+    var isBalanced = totalD == totalC && totalD > 0m;
+}
+
+<div class="card mb-3">
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <div class="text-muted small">Date</div>
+                <div><strong>@Model.Entry.EntryDate.ToShortDateString()</strong></div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="text-muted small">Status</div>
+                <div>
+                    <strong>@Model.Entry.Status</strong>
+                    @if (Model.Entry.Status == JournalStatus.Posted)
+                    {
+                        <span class="badge bg-success ms-2">Posted</span>
+                    }
+                    else if (Model.Entry.Status == JournalStatus.Approved)
+                    {
+                        <span class="badge bg-primary ms-2">Approved</span>
+                    }
+                    else if (Model.Entry.Status == JournalStatus.Rejected)
+                    {
+                        <span class="badge bg-secondary ms-2">Rejected</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-warning text-dark ms-2">Pending</span>
+                    }
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="text-muted small">Total Debit</div>
+                <div><strong>@totalD.ToString("N2")</strong></div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="text-muted small">Total Credit</div>
+                <div><strong>@totalC.ToString("N2")</strong></div>
+            </div>
+
+            <div class="col-12">
+                <div class="text-muted small">Balance Check</div>
+                @if (isBalanced)
+                {
+                    <div class="text-success"><strong>Balanced</strong></div>
+                }
+                else
+                {
+                    <div class="text-danger"><strong>Not balanced</strong> (debits must equal credits, and total must be > 0)</div>
+                }
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(Model.Entry.Description))
+            {
+                <div class="col-12">
+                    <div class="text-muted small">Description</div>
+                    <div>@Model.Entry.Description</div>
+                </div>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(Model.Entry.ManagerComment))
+            {
+                <div class="col-12">
+                    <div class="alert alert-warning mb-0">
+                        <strong>Manager Comment:</strong> @Model.Entry.ManagerComment
+                    </div>
+                </div>
+            }
+
+            @if (Model.Entry.Status == JournalStatus.Posted && Model.Entry.PostedAtUtc.HasValue)
+            {
+                <div class="col-12">
+                    <div class="text-muted small">Posted</div>
+                    <div>
+                        <strong>@Model.Entry.PostedAtUtc.Value.ToLocalTime()</strong>
+                        @if (!string.IsNullOrWhiteSpace(Model.Entry.PostedByUserId))
+                        {
+                            <span class="text-muted ms-2">(PostedByUserId: @Model.Entry.PostedByUserId)</span>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="mb-3">
+    <a class="btn btn-outline-secondary" asp-page="./Index">Back to Journal</a>
+
+    @if (User.IsInRole("Manager") && Model.Entry.Status == JournalStatus.Pending)
+    {
+        <a class="btn btn-outline-success ms-1" asp-page="./Approve" asp-route-id="@Model.Entry.JournalEntryId">
+            Approve/Reject
+        </a>
+    }
+
+    @if (User.IsInRole("Manager"))
+    {
+        <form method="post" class="d-inline">
+            <button type="submit"
+                    class="btn btn-primary ms-1"
+                    asp-page-handler="Post"
+                    asp-route-id="@Model.Entry.JournalEntryId"
+                    disabled="@(Model.CanPost ? null : "disabled")">
+                Post to Ledger
+            </button>
+        </form>
+
+        @if (!Model.CanPost && Model.Entry.Status == JournalStatus.Approved)
+        {
+            <span class="text-muted ms-2 small">
+                (You can only post when the entry is Approved, Balanced, and not already Posted.)
+            </span>
+        }
+    }
+
+    @if (Model.Entry.Status == JournalStatus.Posted)
+    {
+        <a class="btn btn-outline-primary ms-1"
+           asp-page="/Ledger/ByJournal"
+           asp-route-id="@Model.Entry.JournalEntryId">
+            View Ledger Posting
+        </a>
+    }
+</div>
+
+<hr />
+
+<h5>Attachments</h5>
+
+@if (User.IsInRole("Manager") || User.IsInRole("Accountant"))
+{
+    <form method="post" enctype="multipart/form-data" class="row g-2 mb-3">
+        <div class="col-md-6">
+            <input class="form-control" type="file" asp-for="UploadFile" />
+        </div>
+        <div class="col-md-3">
+            <button class="btn btn-outline-primary w-100" type="submit"
+                    asp-page-handler="Upload"
+                    asp-route-id="@Model.Entry.JournalEntryId">
+                Upload
+            </button>
+        </div>
+        <div class="col-md-3 text-muted small d-flex align-items-center">
+            Allowed: pdf, word, excel, csv, jpg, png
+        </div>
+    </form>
+}
+
+@if (Model.Entry.Attachments == null || Model.Entry.Attachments.Count == 0)
+{
+    <p>No attachments.</p>
+}
+else
+{
+    <table class="table table-sm table-striped">
+        <thead>
+            <tr>
+                <th>File</th>
+                <th>Type</th>
+                <th class="text-end">Size</th>
+                <th>Uploaded</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var a in Model.Entry.Attachments.OrderByDescending(x => x.UploadedAtUtc))
+            {
+                var url = $"/uploads/journal/{Model.Entry.JournalEntryId}/{a.StoredFileName}";
+                <tr>
+                    <td>@a.OriginalFileName</td>
+                    <td>@a.ContentType</td>
+                    <td class="text-end">@String.Format("{0:N0}", a.SizeBytes) bytes</td>
+                    <td>@a.UploadedAtUtc.ToLocalTime()</td>
+                    <td class="text-end">
+                        <a class="btn btn-sm btn-outline-secondary" href="@url" target="_blank">Open</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<hr />
+
+<h5>Lines</h5>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Account</th>
+            <th class="text-end">Debit</th>
+            <th class="text-end">Credit</th>
+            <th>Memo</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var line in Model.Entry.Lines)
+        {
+            <tr>
+                <td>@line.ChartAccount!.AccountNumber - @line.ChartAccount.AccountName</td>
+                <td class="text-end">@line.Debit.ToString("N2")</td>
+                <td class="text-end">@line.Credit.ToString("N2")</td>
+                <td>@line.Memo</td>
+            </tr>
+        }
+    </tbody>
+</table>

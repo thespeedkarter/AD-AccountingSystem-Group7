@@ -1,0 +1,78 @@
+﻿@page "{id:int}"
+@model AccountingSystem.Pages.Journal.ApproveModel
+@using AccountingSystem.Models
+@{
+    ViewData["Title"] = "Approve / Reject Journal Entry";
+}
+
+<h2>Approve / Reject Journal Entry #@Model.Entry.JournalEntryId</h2>
+
+<div asp-validation-summary="All" class="text-danger"></div>
+
+<div class="mb-3">
+    <strong>Date:</strong> @Model.Entry.EntryDate.ToShortDateString() <br />
+    <strong>Status:</strong> @Model.Entry.Status
+</div>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Account</th>
+            <th class="text-end">Debit</th>
+            <th class="text-end">Credit</th>
+            <th>Memo</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var line in Model.Entry.Lines)
+        {
+            <tr>
+                <td>@line.ChartAccount!.AccountNumber - @line.ChartAccount.AccountName</td>
+                <td class="text-end">@line.Debit.ToString("N2")</td>
+                <td class="text-end">@line.Credit.ToString("N2")</td>
+                <td>@line.Memo</td>
+            </tr>
+        }
+    </tbody>
+    <tfoot>
+        <tr>
+            <th class="text-end">Totals:</th>
+            <th class="text-end">@Model.TotalDebit.ToString("N2")</th>
+            <th class="text-end">@Model.TotalCredit.ToString("N2")</th>
+            <th>
+                @if (!Model.IsBalanced)
+                {
+                    <span class="text-danger">Not balanced</span>
+                }
+                else
+                {
+                    <span class="text-success">Balanced</span>
+                }
+            </th>
+        </tr>
+    </tfoot>
+</table>
+
+<form method="post" class="mt-3">
+    <div class="mb-3">
+        <label class="form-label">Manager Comment (required only if rejecting)</label>
+        <textarea class="form-control" rows="3" asp-for="ManagerComment"></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-success" asp-page-handler="Approve" disabled="@(Model.CanApproveOrReject ? null : "disabled")">
+        Approve
+    </button>
+
+    <button type="submit" class="btn btn-danger ms-1" asp-page-handler="Reject" disabled="@(Model.CanApproveOrReject ? null : "disabled")">
+        Reject
+    </button>
+
+    <a class="btn btn-outline-secondary ms-1" asp-page="./Details" asp-route-id="@Model.Entry.JournalEntryId">Back</a>
+
+    @if (!Model.CanApproveOrReject)
+    {
+        <div class="text-muted small mt-2">
+            You can only approve/reject a <strong>Pending</strong> entry that is <strong>Balanced</strong>.
+        </div>
+    }
+</form>

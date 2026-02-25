@@ -1,0 +1,78 @@
+﻿@page
+@model AccountingSystem.Pages.Journal.CreateModel
+@{
+    ViewData["Title"] = "Create Journal Entry";
+}
+
+<h2>Create Journal Entry</h2>
+
+<form method="post">
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <div class="row mb-3">
+        <div class="col-md-3">
+            <label class="form-label">Entry Date</label>
+            <input class="form-control" asp-for="Entry.EntryDate" type="date" />
+        </div>
+        <div class="col-md-9">
+            <label class="form-label">Description (optional)</label>
+            <input class="form-control" asp-for="Entry.Description" />
+        </div>
+    </div>
+
+    <h5>Lines (Debits come before Credits)</h5>
+
+    <table class="table table-sm table-striped">
+        <thead>
+            <tr>
+                <th style="width:40%">Account</th>
+                <th style="width:15%" class="text-end">Debit</th>
+                <th style="width:15%" class="text-end">Credit</th>
+                <th style="width:20%">Memo</th>
+                <th style="width:10%"></th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < Model.Lines.Count; i++)
+            {
+                <tr>
+                    <td>
+                        <select class="form-select" asp-for="Lines[i].ChartAccountId">
+                            <option value="0">-- select --</option>
+                            @foreach (var a in Model.AccountOptions)
+                            {
+                                <option value="@a.ChartAccountId">
+                                    @a.AccountNumber - @a.AccountName
+                                </option>
+                            }
+                        </select>
+                    </td>
+                    <td class="text-end">
+                        <input class="form-control text-end" asp-for="Lines[i].Debit" />
+                    </td>
+                    <td class="text-end">
+                        <input class="form-control text-end" asp-for="Lines[i].Credit" />
+                    </td>
+                    <td>
+                        <input class="form-control" asp-for="Lines[i].Memo" />
+                    </td>
+                    <td class="text-end">
+                        <button class="btn btn-outline-danger btn-sm"
+                                type="submit"
+                                asp-page-handler="RemoveLine"
+                                asp-route-index="@i">
+                            Remove
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <button class="btn btn-outline-secondary" type="submit" asp-page-handler="AddLine">+ Add line</button>
+
+    <hr />
+
+    <button class="btn btn-primary" type="submit" asp-page-handler="Save">Submit for Approval</button>
+    <a class="btn btn-outline-secondary" asp-page="./Index">Back</a>
+</form>

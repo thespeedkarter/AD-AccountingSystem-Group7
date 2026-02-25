@@ -1,0 +1,94 @@
+﻿@page "{id:int}"
+@model AccountingSystem.Pages.Ledger.ByJournalModel
+@using AccountingSystem.Models
+@{
+    ViewData["Title"] = "Ledger - Journal Entry " + Model.JournalEntryId;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h2 class="mb-0">Ledger Posting</h2>
+        <div class="text-muted">Journal Entry #@Model.JournalEntryId</div>
+    </div>
+
+    <div class="text-end">
+        <a class="btn btn-outline-secondary" asp-page="/Journal/Details" asp-route-id="@Model.JournalEntryId">
+            Back to Journal Details
+        </a>
+    </div>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+else if (Model.Rows.Count == 0)
+{
+    <div class="alert alert-warning">
+        No ledger rows found for this journal entry. (It may not be posted yet.)
+    </div>
+}
+else
+{
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <div class="text-muted small">Posted At</div>
+                    <div>@Model.PostedAtLocal</div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-muted small">Total Debit</div>
+                    <div class="fw-semibold">@Model.TotalDebit.ToString("N2")</div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-muted small">Total Credit</div>
+                    <div class="fw-semibold">@Model.TotalCredit.ToString("N2")</div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-muted small">Rows</div>
+                    <div class="fw-semibold">@Model.Rows.Count</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <table class="table table-striped table-hover align-middle">
+        <thead>
+            <tr>
+                <th>Account</th>
+                <th class="text-end">Debit</th>
+                <th class="text-end">Credit</th>
+                <th class="text-end">Balance After (Account)</th>
+                <th>Posted</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var r in Model.Rows)
+            {
+                <tr>
+                    <td>
+                        <div class="fw-semibold">@r.AccountNumber - @r.AccountName</div>
+                        @if (!string.IsNullOrWhiteSpace(r.Description))
+                        {
+                            <div class="text-muted small">@r.Description</div>
+                        }
+                    </td>
+                    <td class="text-end">@r.Debit.ToString("N2")</td>
+                    <td class="text-end">@r.Credit.ToString("N2")</td>
+                    <td class="text-end">@r.BalanceAfter.ToString("N2")</td>
+                    <td>@r.PostedAtLocal</td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <th class="text-end">Totals:</th>
+                <th class="text-end">@Model.TotalDebit.ToString("N2")</th>
+                <th class="text-end">@Model.TotalCredit.ToString("N2")</th>
+                <th></th>
+                <th></th>
+            </tr>
+        </tfoot>
+    </table>
+}

@@ -1,0 +1,101 @@
+﻿#nullable disable
+
+using System.ComponentModel.DataAnnotations;
+using AccountingSystem.Data;
+using AccountingSystem.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
+
+namespace AccountingSystem.Areas.Identity.Pages.Account
+{
+    public class ResetPasswordModel : PageModel
+    {
+        private readonly UserManager<IdentityUser> _userManager;
+        private readonly ApplicationDbContext _db;
+
+        public ResetPasswordModel(UserManager<IdentityUser> userManager, ApplicationDbContext db)
+        {
+            _userManager = userManager;
+            _db = db;
+        }
+
+        [BindProperty]
+        public InputModel Input { get; set; }
+
+        public class InputModel
+        {
+            [Required]
+            [EmailAddress]
+            public string Email { get; set; }
+
+            [Required]
+            [StringLength(100, MinimumLength = 8)]
+            [DataType(DataType.Password)]
+            public string Password { get; set; }
+
+            [DataType(DataType.Password)]
+            [Display(Name = "Confirm password")]
+            [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
+            public string ConfirmPassword { get; set; }
+
+            [Required]
+            public string Code { get; set; }
+        }
+
+        public IActionResult OnGet(string code = null, string email = null)
+        {
+            if (code == null) return BadRequest("A code must be supplied for password reset.");
+
+            Input = new InputModel { Code = code, Email = email };
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostAsync()
+        {
+            if (!ModelState.IsValid) return Page();
+
+            var user = await _userManager.FindByEmailAsync(Input.Email);
+            if (user == null)
+                return RedirectToPage("./ResetPasswordConfirmation");
+
+            // Save current password hash into history BEFORE changing it
+            if (!string.IsNullOrEmpty(user.PasswordHash))
+            {
+                _db.PasswordHistories.Add(new PasswordHistory
+                {
+                    UserId = user.Id,
+                    PasswordHash = user.PasswordHash,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+
+            var result = await _userManager.ResetPasswordAsync(user, Input.Code, Input.Password);
+
+            if (result.Succeeded)
+            {
+                // Update security row (expiration)
+                var sec = await _db.UserSecurities.FirstOrDefaultAsync(x => x.UserId == user.Id);
+                if (sec == null)
+                {
+                    sec = new UserSecurity { UserId = user.Id, IsActive = true };
+                    _db.UserSecurities.Add(sec);
+                }
+
+                sec.IsActive = true;
+                sec.PasswordLastChangedAt = DateTime.UtcNow;
+                sec.PasswordExpiresAt = DateTime.UtcNow.AddDays(90);
+
+                await _db.SaveChangesAsync();
+
+                return RedirectToPage("./ResetPasswordConfirmation");
+            }
+
+            foreach (var error in result.Errors)
+                ModelState.AddModelError(string.Empty, error.Description);
+
+            return Page();
+        }
+    }
+}

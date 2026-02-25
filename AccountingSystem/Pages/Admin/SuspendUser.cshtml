@@ -1,0 +1,45 @@
+﻿@page
+@model AccountingSystem.Pages.Admin.SuspendUserModel
+@{
+    ViewData["Title"] = "Suspend User";
+}
+
+<h2>Suspend / Deactivate User</h2>
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success">@TempData["Message"]</div>
+}
+
+<form method="post">
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <div class="mb-3">
+        <label class="form-label">Select User</label>
+        <select class="form-select" asp-for="SelectedUserId">
+            <option value="">-- Select a user --</option>
+            @foreach (var u in Model.Users)
+            {
+                <option value="@u.Id">@u.UserName (@u.Email)</option>
+            }
+        </select>
+    </div>
+
+    <div class="form-check mb-3">
+        <input class="form-check-input" asp-for="DeactivateAccount" />
+        <label class="form-check-label" asp-for="DeactivateAccount">Deactivate account completely</label>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label class="form-label">Suspended From</label>
+            <input class="form-control" asp-for="SuspendedFrom" type="datetime-local" />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Suspended Until</label>
+            <input class="form-control" asp-for="SuspendedUntil" type="datetime-local" />
+        </div>
+    </div>
+
+    <button class="btn btn-primary" type="submit">Save</button>
+</form>

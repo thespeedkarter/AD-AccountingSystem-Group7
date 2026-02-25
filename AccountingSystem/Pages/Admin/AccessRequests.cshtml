@@ -1,0 +1,120 @@
+﻿@page
+@model AccountingSystem.Pages.Admin.AccessRequestsModel
+@using AccountingSystem.Models
+@{
+    ViewData["Title"] = "Access Requests";
+}
+
+<h2>Access Requests</h2>
+
+<p class="text-muted">
+    Approve or reject new user requests. Approval creates the Identity user, assigns a role, and marks the request processed.
+</p>
+
+@if (!User.IsInRole("Administrator"))
+{
+    <div class="alert alert-danger">
+        You must be an Administrator to access this page.
+    </div>
+    return;
+}
+
+@if (Model.Requests == null || Model.Requests.Count == 0)
+{
+    <div class="alert alert-secondary">No access requests found.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Requested</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>DOB</th>
+                    <th>Status</th>
+                    <th style="min-width:320px;">Comment</th>
+                    <th style="min-width:320px;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var r in Model.Requests)
+                {
+                    <tr>
+                        <td>@r.RequestedAt.ToLocalTime()</td>
+                        <td>@r.FirstName @r.LastName</td>
+                        <td>@r.Email</td>
+                        <td>@r.DateOfBirth.ToShortDateString()</td>
+                        <td>
+                            @if (r.Status == AccessRequestStatus.Pending)
+                            {
+                                <span class="badge bg-warning text-dark">Pending</span>
+                            }
+                            else if (r.Status == AccessRequestStatus.Approved)
+                            {
+                                <span class="badge bg-success">Approved</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Rejected</span>
+                            }
+                        </td>
+
+                        <td>
+                            @if (!string.IsNullOrWhiteSpace(r.AdminComment))
+                            {
+                                <div class="small text-muted">@r.AdminComment</div>
+                            }
+                            else
+                            {
+                                <span class="text-muted small">—</span>
+                            }
+                        </td>
+
+                        <td>
+                            @if (r.Status != AccessRequestStatus.Pending)
+                            {
+                                <span class="text-muted">Processed</span>
+                            }
+                            else
+                            {
+                                <form method="post" class="d-flex flex-wrap gap-2">
+                                    <input type="hidden" name="RequestId" value="@r.AccessRequestId" />
+
+                                    <select class="form-select form-select-sm" name="RoleToAssign" style="max-width: 170px;">
+                                        <option value="Administrator">Administrator</option>
+                                        <option value="Manager">Manager</option>
+                                        <option value="Accountant" selected>Accountant</option>
+                                    </select>
+
+                                    <input class="form-control form-control-sm"
+                                           name="AdminComment"
+                                           placeholder="Optional comment (required for reject)"
+                                           style="max-width: 260px;" />
+
+                                    <button type="submit"
+                                            class="btn btn-sm btn-success"
+                                            asp-page-handler="Approve">
+                                        Approve
+                                    </button>
+
+                                    <button type="submit"
+                                            class="btn btn-sm btn-outline-danger"
+                                            asp-page-handler="Reject"
+                                            onclick="return confirm('Reject this request?');">
+                                        Reject
+                                    </button>
+                                </form>
+
+                                <div class="small text-muted mt-2">
+                                    Approval password (current): <strong>Temp!234</strong>
+                                </div>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
