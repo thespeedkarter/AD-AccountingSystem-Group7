@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AccountingSystem.Pages.Journal
 {
-    [Authorize]
+    [Authorize] // class-level only
     public class DetailsModel : PageModel
     {
         private readonly ApplicationDbContext _db;
@@ -37,9 +37,6 @@ namespace AccountingSystem.Pages.Journal
         [BindProperty]
         public IFormFile? UploadFile { get; set; }
 
-        // Used by the UI to enable/disable Post button
-        public bool CanPost { get; set; }
-
         public async Task<IActionResult> OnGetAsync(int id)
         {
             var entry = await _db.JournalEntries
@@ -52,39 +49,16 @@ namespace AccountingSystem.Pages.Journal
             if (entry == null) return NotFound();
 
             Entry = entry;
-
-            // Can post only when Approved + Balanced + not already posted
-            var totalD = Entry.Lines.Sum(l => l.Debit);
-            var totalC = Entry.Lines.Sum(l => l.Credit);
-            var isBalanced = totalD == totalC && totalD > 0m;
-
-            CanPost = Entry.Status == JournalStatus.Approved && isBalanced;
-
             return Page();
         }
 
-        [Authorize(Roles = "Manager")]
+        // MANAGER ONLY: Post to ledger
         public async Task<IActionResult> OnPostPostAsync(int id)
         {
+            if (!User.IsInRole("Manager"))
+                return Forbid();
+
             var userId = _userManager.GetUserId(User);
-
-            // Optional safety: prevent posting if not balanced/approved (UI already blocks, but server must enforce too)
-            var entry = await _db.JournalEntries
-                .Include(e => e.Lines)
-                .FirstOrDefaultAsync(e => e.JournalEntryId == id);
-
-            if (entry == null) return NotFound();
-
-            var totalD = entry.Lines.Sum(l => l.Debit);
-            var totalC = entry.Lines.Sum(l => l.Credit);
-            var isBalanced = totalD == totalC && totalD > 0m;
-
-            if (entry.Status != JournalStatus.Approved || !isBalanced)
-            {
-                ErrorMessage = "Cannot post: entry must be Approved and Balanced.";
-                return RedirectToPage("./Details", new { id });
-            }
-
             var (ok, message) = await _posting.PostAsync(id, userId);
 
             if (ok) StatusMessage = message;
@@ -93,9 +67,12 @@ namespace AccountingSystem.Pages.Journal
             return RedirectToPage("./Details", new { id });
         }
 
-        [Authorize(Roles = "Manager,Accountant")]
+        // MANAGER or ACCOUNTANT: Upload attachment
         public async Task<IActionResult> OnPostUploadAsync(int id)
         {
+            if (!(User.IsInRole("Manager") || User.IsInRole("Accountant")))
+                return Forbid();
+
             if (UploadFile == null || UploadFile.Length == 0)
             {
                 ErrorMessage = "Please choose a file to upload.";
@@ -112,11 +89,9 @@ namespace AccountingSystem.Pages.Journal
                 return RedirectToPage("./Details", new { id });
             }
 
-            // Make sure journal exists
             var entry = await _db.JournalEntries.FirstOrDefaultAsync(e => e.JournalEntryId == id);
             if (entry == null) return NotFound();
 
-            // Folder: wwwroot/uploads/journal/{id}/
             var folderRel = Path.Combine("uploads", "journal", id.ToString());
             var folderAbs = Path.Combine(_env.WebRootPath, folderRel);
             Directory.CreateDirectory(folderAbs);
