@@ -16,8 +16,9 @@ namespace AccountingSystem.Data
         public DbSet<PasswordHistory> PasswordHistories { get; set; }
         public DbSet<UserSecurity> UserSecurities { get; set; }
         public DbSet<ChartAccount> ChartAccounts { get; set; }
+        public DbSet<SentEmail> SentEmails { get; set; }
 
-        public DbSet<EventLog> EventLogs { get; set; }  // ADD THIS
+        public DbSet<EventLog> EventLogs { get; set; }
 
         public DbSet<JournalEntry> JournalEntries { get; set; }
         public DbSet<JournalLine> JournalLines { get; set; }
@@ -44,6 +45,48 @@ namespace AccountingSystem.Data
                 .HasIndex(a => a.AccountName)
                 .IsUnique();
 
+            // -------------------------
+            // Money precision 
+            // -------------------------
+            builder.Entity<ChartAccount>()
+                .Property(x => x.Balance)
+                .HasPrecision(18, 2);
+
+            builder.Entity<ChartAccount>()
+                .Property(x => x.Debit)
+                .HasPrecision(18, 2);
+
+            builder.Entity<ChartAccount>()
+                .Property(x => x.Credit)
+                .HasPrecision(18, 2);
+
+            builder.Entity<ChartAccount>()
+                .Property(x => x.InitialBalance)
+                .HasPrecision(18, 2);
+
+            builder.Entity<JournalLine>()
+                .Property(x => x.Debit)
+                .HasPrecision(18, 2);
+
+            builder.Entity<JournalLine>()
+                .Property(x => x.Credit)
+                .HasPrecision(18, 2);
+
+            builder.Entity<LedgerEntry>()
+                .Property(x => x.Debit)
+                .HasPrecision(18, 2);
+
+            builder.Entity<LedgerEntry>()
+                .Property(x => x.Credit)
+                .HasPrecision(18, 2);
+
+            builder.Entity<LedgerEntry>()
+                .Property(x => x.BalanceAfter)
+                .HasPrecision(18, 2);
+
+            // -------------------------
+            // EventLog column sizing
+            // -------------------------
             builder.Entity<EventLog>()
                 .Property(x => x.TableName)
                 .HasMaxLength(100);

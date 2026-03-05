@@ -1,0 +1,77 @@
+﻿@page "{userId}"
+@model AccountingSystem.Pages.Admin.Users.EditModel
+@{
+    ViewData["Title"] = "Edit User";
+}
+
+<h2>Edit User</h2>
+
+<div asp-validation-summary="All" class="text-danger"></div>
+
+@if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+{
+    <div class="alert alert-success">@Model.StatusMessage</div>
+}
+
+<div class="card mb-3">
+    <div class="card-body">
+        <div class="fw-semibold">@Model.UserEmail</div>
+        <div class="text-muted small">@Model.UserId</div>
+        <div class="mt-2">
+            <span class="badge bg-dark">@Model.RoleDisplay</span>
+            @if (Model.IsActive)
+            {
+                <span class="badge bg-success ms-1">Active</span>
+            }
+            else
+            {
+                <span class="badge bg-secondary ms-1">Inactive</span>
+            }
+        </div>
+    </div>
+</div>
+
+<form method="post" class="card">
+    <div class="card-body">
+        <input type="hidden" asp-for="UserId" />
+
+        <h5 class="mb-2">Account Status</h5>
+        <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" asp-for="IsActive" />
+            <label class="form-check-label">Active (unchecked = inactive)</label>
+        </div>
+
+        <h5 class="mb-2">Suspension</h5>
+        <div class="row g-2 mb-3">
+            <div class="col-md-6">
+                <label class="form-label">Suspended From (optional)</label>
+                <input class="form-control" type="datetime-local" asp-for="SuspendedFromLocal" />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Suspended Until (optional)</label>
+                <input class="form-control" type="datetime-local" asp-for="SuspendedUntilLocal" />
+            </div>
+            <div class="col-12 text-muted small">
+                Leave both empty to clear suspension.
+            </div>
+        </div>
+
+        <h5 class="mb-2">Role</h5>
+        <div class="row g-2 mb-3">
+            <div class="col-md-6">
+                <select class="form-select" asp-for="SelectedRole">
+                    @foreach (var r in Model.AllRoles)
+                    {
+                        <option value="@r">@r</option>
+                    }
+                </select>
+                <div class="text-muted small mt-1">This sets the user's primary role.</div>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Save</button>
+            <a class="btn btn-outline-secondary" asp-page="./Index">Back</a>
+        </div>
+    </div>
+</form>

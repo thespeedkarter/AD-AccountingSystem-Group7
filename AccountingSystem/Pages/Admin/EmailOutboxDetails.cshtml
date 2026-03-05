@@ -1,0 +1,23 @@
+﻿@page "{id:int}"
+@model AccountingSystem.Pages.Admin.EmailOutboxDetailsModel
+@{
+    ViewData["Title"] = "Email Details";
+}
+
+<h2>Email Details</h2>
+
+<div class="mb-3">
+    <div><strong>Sent:</strong> @Model.Email.SentAtUtc.ToLocalTime()</div>
+    <div><strong>To:</strong> @Model.Email.ToEmail</div>
+    <div><strong>Subject:</strong> @Model.Email.Subject</div>
+    <div><strong>Channel:</strong> @Model.Email.Channel</div>
+</div>
+
+<hr />
+
+<h5>Body</h5>
+<div class="border rounded p-3 bg-light">
+    @Html.Raw(Model.Email.BodyHtml)
+</div>
+
+<a class="btn btn-outline-secondary mt-3" asp-page="./EmailOutbox">Back</a>

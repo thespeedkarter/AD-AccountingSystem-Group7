@@ -1,0 +1,96 @@
+﻿@page
+@model AccountingSystem.Pages.Admin.Users.IndexModel
+@{
+    ViewData["Title"] = "Users";
+}
+
+<h2>Users</h2>
+
+@if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+{
+    <div class="alert alert-success">@Model.StatusMessage</div>
+}
+@if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-5">
+        <input class="form-control" name="Search" value="@Model.Search" placeholder="Search username or email" />
+    </div>
+
+    <div class="col-md-3">
+        <select class="form-select" name="Role">
+            <option value="">All Roles</option>
+            @foreach (var r in Model.AllRoles)
+            {
+                <option value="@r" selected="@(Model.Role == r ? "selected" : null)">@r</option>
+            }
+        </select>
+    </div>
+
+    <div class="col-md-2 d-flex align-items-center">
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="ShowInactive" value="true" @(Model.ShowInactive ? "checked" : "") />
+            <label class="form-check-label">Show inactive</label>
+        </div>
+    </div>
+
+    <div class="col-md-2">
+        <button class="btn btn-primary w-100" type="submit">Apply</button>
+    </div>
+</form>
+
+<div class="table-responsive">
+    <table class="table table-striped align-middle">
+        <thead>
+            <tr>
+                <th>User</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Active</th>
+                <th>Lockout</th>
+                <th>Password Expires</th>
+                <th class="text-end"></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var u in Model.Users)
+            {
+                <tr>
+                    <td>
+                        <div class="fw-semibold">@u.UserName</div>
+                        <div class="text-muted small">@u.UserId</div>
+                    </td>
+                    <td>@u.Email</td>
+                    <td><span class="badge bg-secondary">@u.Role</span></td>
+                    <td>
+                        @if (u.IsActive)
+                        {
+                            <span class="badge bg-success">Active</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">Inactive</span>
+                        }
+                    </td>
+                    <td>
+                        @if (u.IsLockedOut)
+                        {
+                            <span class="badge bg-warning text-dark">Locked</span>
+                        }
+                        else
+                        {
+                            <span class="text-muted">—</span>
+                        }
+                    </td>
+                    <td>@u.PasswordExpiresAtLocal</td>
+                    <td class="text-end">
+                        <a class="btn btn-sm btn-outline-primary" asp-page="/Admin/EditUser" asp-route-id="@u.UserId">Edit</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

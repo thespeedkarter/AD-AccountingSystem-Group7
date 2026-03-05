@@ -3,42 +3,68 @@
 <ul class="navbar-nav">
     @if (User.Identity?.IsAuthenticated ?? false)
     {
-        var displayName = User.Identity?.Name ?? "Account";
+        var displayName =
+        User.FindFirstValue(ClaimTypes.Email)
+        ?? User.Identity?.Name
+        ?? "Account";
+
         var role =
         User.IsInRole("Administrator") ? "Administrator" :
         User.IsInRole("Manager") ? "Manager" :
         User.IsInRole("Accountant") ? "Accountant" :
         "User";
 
+        var roleClass =
+        role == "Administrator" ? "bg-danger" :
+        role == "Manager" ? "bg-primary" :
+        "bg-secondary";
+
         <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle d-flex align-items-center gap-2"
                href="#"
                role="button"
-               data-bs-toggle="dropdown"
-               aria-expanded="false">
+               data-bs-toggle="dropdown">
+
                 <span class="user-dot"></span>
-                <span class="text-truncate" style="max-width: 180px;">@displayName</span>
-                <span class="badge rounded-pill user-role-badge">@role</span>
+                <span class="text-truncate" style="max-width:180px;">@displayName</span>
+                <span class="badge rounded-pill @roleClass">@role</span>
+
             </a>
 
             <ul class="dropdown-menu dropdown-menu-end app-dropdown">
+
                 <li>
                     <a class="dropdown-item" asp-area="" asp-page="/Dashboard">Dashboard</a>
                 </li>
+
                 <li>
-                    <a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index">Manage Account</a>
+                    <a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index">
+                        Manage Account
+                    </a>
                 </li>
+
                 <li>
-                    <a class="dropdown-item" asp-area="Identity" asp-page="/Account/ForgotPassword">Forgot Password</a>
+                    <a class="dropdown-item" asp-area="Identity" asp-page="/Account/ForgotPassword">
+                        Forgot Password
+                    </a>
                 </li>
+
                 <li><hr class="dropdown-divider" /></li>
+
                 <li>
-                    <form asp-area="Identity" asp-page="/Account/Logout"
+                    <form asp-area="Identity"
+                          asp-page="/Account/Logout"
                           asp-route-returnUrl="@Url.Page("/Index", new { area = "" })"
-                          method="post" class="m-0">
-                        <button type="submit" class="dropdown-item text-danger">Logout</button>
+                          method="post"
+                          class="m-0">
+
+                        <button type="submit" class="dropdown-item text-danger">
+                            Logout
+                        </button>
+
                     </form>
                 </li>
+
             </ul>
         </li>
     }
@@ -47,6 +73,7 @@
         <li class="nav-item">
             <a class="nav-link" asp-area="" asp-page="/Public/RequestAccess">Create New User</a>
         </li>
+
         <li class="nav-item">
             <a class="nav-link" asp-area="Identity" asp-page="/Account/Login">Login</a>
         </li>

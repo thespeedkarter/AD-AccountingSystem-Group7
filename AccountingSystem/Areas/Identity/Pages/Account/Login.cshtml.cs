@@ -1,12 +1,20 @@
-﻿#nullable disable
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+#nullable disable
 
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Threading.Tasks;
 using AccountingSystem.Data;
+using AccountingSystem.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace AccountingSystem.Areas.Identity.Pages.Account
 {
@@ -15,15 +23,18 @@ namespace AccountingSystem.Areas.Identity.Pages.Account
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly ApplicationDbContext _db;
+        private readonly ILogger<LoginModel> _logger;
 
         public LoginModel(
             SignInManager<IdentityUser> signInManager,
             UserManager<IdentityUser> userManager,
-            ApplicationDbContext db)
+            ApplicationDbContext db,
+            ILogger<LoginModel> logger)
         {
             _signInManager = signInManager;
             _userManager = userManager;
             _db = db;
+            _logger = logger;
         }
 
         [BindProperty]
@@ -66,16 +77,24 @@ namespace AccountingSystem.Areas.Identity.Pages.Account
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
             returnUrl ??= Url.Content("~/");
+            ReturnUrl = returnUrl;
 
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
             if (!ModelState.IsValid)
                 return Page();
 
-            // Support login by username OR email
-            IdentityUser user = await _userManager.FindByNameAsync(Input.UsernameOrEmail);
+            // Find by username OR email
+            var input = Input.UsernameOrEmail?.Trim();
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                ModelState.AddModelError(string.Empty, "Enter username or email.");
+                return Page();
+            }
+
+            IdentityUser user = await _userManager.FindByNameAsync(input);
             if (user == null)
-                user = await _userManager.FindByEmailAsync(Input.UsernameOrEmail);
+                user = await _userManager.FindByEmailAsync(input);
 
             if (user == null)
             {
@@ -83,48 +102,72 @@ namespace AccountingSystem.Areas.Identity.Pages.Account
                 return Page();
             }
 
-            // Sprint checks using UserSecurities
+            // Check security row (create if missing)
             var sec = await _db.UserSecurities.FirstOrDefaultAsync(x => x.UserId == user.Id);
-            if (sec != null)
+            if (sec == null)
             {
-                if (!sec.IsActive)
+                sec = new UserSecurity
                 {
-                    ModelState.AddModelError(string.Empty, "Your account is inactive. Please contact an administrator.");
-                    return Page();
-                }
-
-                var now = DateTime.UtcNow;
-
-                if (sec.SuspendedFrom.HasValue && sec.SuspendedUntil.HasValue
-                    && now >= sec.SuspendedFrom.Value && now <= sec.SuspendedUntil.Value)
-                {
-                    ModelState.AddModelError(string.Empty, $"Your account is suspended until {sec.SuspendedUntil.Value.ToLocalTime()}.");
-                    return Page();
-                }
-
-                if (now > sec.PasswordExpiresAt)
-                {
-                    ModelState.AddModelError(string.Empty, "Your password has expired. Please use 'Forgot password' to reset it.");
-                    return Page();
-                }
-
-                // 3-day warning (Sprint #15)
-                var daysLeft = (sec.PasswordExpiresAt - now).TotalDays;
-                if (daysLeft <= 3)
-                {
-                    ModelState.AddModelError(string.Empty, $"Warning: your password expires in {Math.Ceiling(daysLeft)} day(s).");
-                }
+                    UserId = user.Id,
+                    IsActive = true,
+                    PasswordLastChangedAt = DateTime.UtcNow,
+                    PasswordExpiresAt = DateTime.UtcNow.AddDays(90)
+                };
+                _db.UserSecurities.Add(sec);
+                await _db.SaveChangesAsync();
             }
 
-            // lockoutOnFailure: true to enforce 3 attempts (Sprint #13)
-            var result = await _signInManager.PasswordSignInAsync(user.UserName, Input.Password, Input.RememberMe, lockoutOnFailure: true);
+            // Active check
+            if (!sec.IsActive)
+            {
+                ModelState.AddModelError(string.Empty, "Your account is inactive. Please contact an administrator.");
+                return Page();
+            }
+
+            // Suspension check
+            var now = DateTime.UtcNow;
+            if (sec.SuspendedFrom.HasValue && sec.SuspendedUntil.HasValue
+                && now >= sec.SuspendedFrom.Value && now <= sec.SuspendedUntil.Value)
+            {
+                ModelState.AddModelError(string.Empty, $"Your account is suspended until {sec.SuspendedUntil.Value.ToLocalTime()}.");
+                return Page();
+            }
+
+            // Password expiry check
+            if (now > sec.PasswordExpiresAt)
+            {
+                ModelState.AddModelError(string.Empty, "Your password has expired. Please use 'Forgot password' to reset it.");
+                return Page();
+            }
+
+            // 3-day warning
+            var daysLeft = (sec.PasswordExpiresAt - now).TotalDays;
+            if (daysLeft <= 3)
+            {
+                ModelState.AddModelError(string.Empty, $"Warning: your password expires in {Math.Ceiling(daysLeft)} day(s).");
+            }
+
+            
+            var result = await _signInManager.PasswordSignInAsync(
+                user.UserName,
+                Input.Password,
+                Input.RememberMe,
+                lockoutOnFailure: true);
 
             if (result.Succeeded)
+            {
+                _logger.LogInformation("User logged in: {UserId}", user.Id);
                 return LocalRedirect(returnUrl);
+            }
 
             if (result.IsLockedOut)
             {
-                ModelState.AddModelError(string.Empty, "Account locked due to too many failed login attempts.");
+                
+                sec.SuspendedFrom = DateTime.UtcNow;
+                sec.SuspendedUntil = DateTime.UtcNow.AddMinutes(30);
+                await _db.SaveChangesAsync();
+
+                ModelState.AddModelError(string.Empty, "Account locked due to too many failed login attempts. Try again later.");
                 return Page();
             }
 

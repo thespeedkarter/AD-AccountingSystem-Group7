@@ -4,6 +4,7 @@ using AccountingSystem.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Identity.UI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,6 +48,8 @@ builder.Services.AddScoped<IPasswordValidator<IdentityUser>, PasswordHistoryVali
 // App services
 builder.Services.AddScoped<IEventLogger, EventLogger>();
 builder.Services.AddScoped<IPostingService, PostingService>();
+
+builder.Services.AddScoped<IEmailSender, AccountingSystem.Services.DbEmailSender>();
 
 // File upload size
 builder.Services.Configure<FormOptions>(o =>

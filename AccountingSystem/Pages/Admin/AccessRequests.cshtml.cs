@@ -1,4 +1,3 @@
-using System.Text.Json;
 using AccountingSystem.Data;
 using AccountingSystem.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -27,6 +26,9 @@ namespace AccountingSystem.Pages.Admin
         [BindProperty] public string? AdminComment { get; set; }
         [BindProperty] public string RoleToAssign { get; set; } = "Accountant";
 
+        [TempData] public string? StatusMessage { get; set; }
+        [TempData] public string? ErrorMessage { get; set; }
+
         public async Task OnGetAsync()
         {
             Requests = await _db.AccessRequests
@@ -42,15 +44,11 @@ namespace AccountingSystem.Pages.Admin
             if (req.Status != AccessRequestStatus.Pending)
                 return RedirectToPage();
 
-            var adminUserId = _userManager.GetUserId(User);
-
-            var before = SnapshotAccessRequest(req);
-
-            // Create username: first initial + last name + MMYY
+            // Username rule: first initial + last name + MMYY
             var mmyy = DateTime.Now.ToString("MMyy");
             var username = $"{req.FirstName.Substring(0, 1)}{req.LastName}{mmyy}".ToLower();
 
-            // Temp password (you can replace later with reset link flow)
+            // Temp password (Sprint 1 simple approach)
             var tempPassword = "Temp!234";
 
             var user = new IdentityUser
@@ -60,49 +58,72 @@ namespace AccountingSystem.Pages.Admin
                 EmailConfirmed = true
             };
 
-            var result = await _userManager.CreateAsync(user, tempPassword);
-            if (!result.Succeeded)
+            var createResult = await _userManager.CreateAsync(user, tempPassword);
+            // Save initial password hash into history
+            if (!string.IsNullOrWhiteSpace(user.PasswordHash))
             {
-                foreach (var e in result.Errors)
-                    ModelState.AddModelError(string.Empty, e.Description);
-
-                await OnGetAsync();
-                return Page();
+                _db.PasswordHistories.Add(new PasswordHistory
+                {
+                    UserId = user.Id,
+                    PasswordHash = user.PasswordHash,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+            if (!createResult.Succeeded)
+            {
+                ErrorMessage = string.Join(" | ", createResult.Errors.Select(e => e.Description));
+                return RedirectToPage();
             }
 
+            // assign role
             await _userManager.AddToRoleAsync(user, RoleToAssign);
 
-            req.Status = AccessRequestStatus.Approved;
-            req.AdminComment = (AdminComment ?? "").Trim();
-            req.ProcessedAt = DateTime.UtcNow;
-            req.ProcessedByUserId = adminUserId;
-
-            var after = SnapshotAccessRequest(req);
-
-            // Log the access request approval + user creation info
-            _db.EventLogs.Add(new EventLog
+            // Ensure UserSecurity row exists
+            var sec = await _db.UserSecurities.FirstOrDefaultAsync(x => x.UserId == user.Id);
+            if (sec == null)
             {
-                TableName = "AccessRequests",
-                RecordId = req.AccessRequestId,
-                Action = (int)EventAction.Approve,
-                BeforeJson = JsonSerializer.Serialize(before),
-                AfterJson = JsonSerializer.Serialize(new
+                sec = new UserSecurity
                 {
-                    AccessRequest = after,
-                    CreatedUser = new
-                    {
-                        user.Id,
-                        user.UserName,
-                        user.Email,
-                        RoleAssigned = RoleToAssign,
-                        TempPassword = tempPassword
-                    }
-                }),
-                UserId = adminUserId,
-                CreatedAtUtc = DateTime.UtcNow
+                    UserId = user.Id,
+                    IsActive = true,
+                    PasswordLastChangedAt = DateTime.UtcNow,
+                    PasswordExpiresAt = DateTime.UtcNow.AddDays(90)
+                };
+                _db.UserSecurities.Add(sec);
+            }
+
+            // mark request approved
+            req.Status = AccessRequestStatus.Approved;
+            req.ProcessedAt = DateTime.UtcNow;
+            req.ProcessedByUserId = _userManager.GetUserId(User);
+
+            var note = $"Approved | Username: {username} | Temp password: {tempPassword}";
+            req.AdminComment = string.IsNullOrWhiteSpace(AdminComment)
+                ? note
+                : $"{AdminComment.Trim()} | {note}";
+
+            // "Email" (Option A: log to SentEmails table)
+            var loginUrl = $"{Request.Scheme}://{Request.Host}/Identity/Account/Login";
+            _db.SentEmails.Add(new SentEmail
+            {
+                ToEmail = req.Email,
+                ToUserId = user.Id,
+                Subject = "Your AccountingSystem access has been approved",
+                BodyHtml =
+                    $@"<p>Hello {req.FirstName},</p>
+                       <p>Your access request has been <strong>approved</strong>.</p>
+                       <p><strong>Username:</strong> {username}<br/>
+                          <strong>Temporary Password:</strong> {tempPassword}</p>
+                       <p>Login here: <a href=""{loginUrl}"">{loginUrl}</a></p>
+                       <p>After login, please change your password under Manage Account.</p>",
+                SentByUserId = _userManager.GetUserId(User),
+                SentAtUtc = DateTime.UtcNow,
+                Channel = "OutboxDb"
             });
 
             await _db.SaveChangesAsync();
+
+            StatusMessage = $"Approved: {req.Email} (username: {username})";
             return RedirectToPage();
         }
 
@@ -114,45 +135,35 @@ namespace AccountingSystem.Pages.Admin
             if (req.Status != AccessRequestStatus.Pending)
                 return RedirectToPage();
 
-            var adminUserId = _userManager.GetUserId(User);
-
-            var before = SnapshotAccessRequest(req);
+            var reason = string.IsNullOrWhiteSpace(AdminComment) ? null : AdminComment.Trim();
+            if (string.IsNullOrWhiteSpace(reason))
+            {
+                ErrorMessage = "Rejecting requires a comment (reason).";
+                return RedirectToPage();
+            }
 
             req.Status = AccessRequestStatus.Rejected;
-            req.AdminComment = (AdminComment ?? "").Trim();
+            req.AdminComment = reason;
             req.ProcessedAt = DateTime.UtcNow;
-            req.ProcessedByUserId = adminUserId;
+            req.ProcessedByUserId = _userManager.GetUserId(User);
 
-            var after = SnapshotAccessRequest(req);
-
-            _db.EventLogs.Add(new EventLog
+            _db.SentEmails.Add(new SentEmail
             {
-                TableName = "AccessRequests",
-                RecordId = req.AccessRequestId,
-                Action = (int)EventAction.Reject,
-                BeforeJson = JsonSerializer.Serialize(before),
-                AfterJson = JsonSerializer.Serialize(after),
-                UserId = adminUserId,
-                CreatedAtUtc = DateTime.UtcNow
+                ToEmail = req.Email,
+                Subject = "Your AccountingSystem access request was rejected",
+                BodyHtml =
+                    $@"<p>Hello {req.FirstName},</p>
+                       <p>Your access request has been <strong>rejected</strong>.</p>
+                       <p><strong>Reason:</strong> {System.Net.WebUtility.HtmlEncode(reason)}</p>",
+                SentByUserId = _userManager.GetUserId(User),
+                SentAtUtc = DateTime.UtcNow,
+                Channel = "OutboxDb"
             });
 
             await _db.SaveChangesAsync();
+
+            StatusMessage = $"Rejected: {req.Email}";
             return RedirectToPage();
         }
-
-        private static object SnapshotAccessRequest(AccessRequest r) => new
-        {
-            r.AccessRequestId,
-            r.FirstName,
-            r.LastName,
-            r.Email,
-            r.DateOfBirth,
-            r.Address,
-            r.RequestedAt,
-            r.Status,
-            r.AdminComment,
-            r.ProcessedByUserId,
-            r.ProcessedAt
-        };
     }
 }

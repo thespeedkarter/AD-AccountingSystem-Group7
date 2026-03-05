@@ -1,0 +1,92 @@
+﻿@page "{id}"
+@model AccountingSystem.Pages.Admin.EditUserModel
+@{
+    ViewData["Title"] = "Edit User";
+}
+
+<h2>Edit User</h2>
+
+@if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+{
+    <div class="alert alert-success">@Model.StatusMessage</div>
+}
+@if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+
+<div class="card mb-3">
+    <div class="card-body">
+        <div><strong>Username:</strong> @Model.UserName</div>
+        <div><strong>Email:</strong> @Model.Email</div>
+        <div><strong>Current Role:</strong> @Model.CurrentRole</div>
+    </div>
+</div>
+
+<form method="post">
+    <input type="hidden" asp-for="UserId" />
+
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label class="form-label">Role</label>
+            <select class="form-select" asp-for="RoleToAssign">
+                <option>Administrator</option>
+                <option>Manager</option>
+                <option>Accountant</option>
+            </select>
+        </div>
+
+        <div class="col-md-4 d-flex align-items-end">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" asp-for="IsActive" />
+                <label class="form-check-label">Active</label>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Password Expires At (UTC)</label>
+            <input class="form-control" asp-for="PasswordExpiresAt" type="datetime-local" />
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label">Suspended From (UTC)</label>
+            <input class="form-control" asp-for="SuspendedFrom" type="datetime-local" />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Suspended Until (UTC)</label>
+            <input class="form-control" asp-for="SuspendedUntil" type="datetime-local" />
+        </div>
+
+        <div class="col-md-12">
+            <label class="form-label">Security Question</label>
+            <input class="form-control" asp-for="SecurityQuestion" placeholder="Example: What is your favorite color?" />
+        </div>
+        <div class="col-md-12">
+            <label class="form-label">Security Answer (will be saved as hash)</label>
+            <input class="form-control" asp-for="SecurityAnswerPlain" placeholder="Answer" />
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <button class="btn btn-primary" type="submit" asp-page-handler="Save">Save Changes</button>
+        <button class="btn btn-outline-warning ms-1" type="submit" asp-page-handler="Unlock">Unlock User</button>
+        <a class="btn btn-outline-secondary ms-1" asp-page="./Users">Back</a>
+    </div>
+</form>
+
+<hr />
+
+<h4>Send Email (logged in database)</h4>
+<form method="post" class="mt-2">
+    <input type="hidden" asp-for="UserId" />
+
+    <div class="mb-2">
+        <label class="form-label">Subject</label>
+        <input class="form-control" asp-for="EmailSubject" />
+    </div>
+    <div class="mb-2">
+        <label class="form-label">Body</label>
+        <textarea class="form-control" asp-for="EmailBody" rows="4"></textarea>
+    </div>
+    <button class="btn btn-success" type="submit" asp-page-handler="SendEmail">Send</button>
+</form>

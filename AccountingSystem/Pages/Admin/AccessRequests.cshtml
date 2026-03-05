@@ -7,6 +7,15 @@
 
 <h2>Access Requests</h2>
 
+@if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+{
+    <div class="alert alert-success">@Model.StatusMessage</div>
+}
+@if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+
 <p class="text-muted">
     Approve or reject new user requests. Approval creates the Identity user, assigns a role, and marks the request processed.
 </p>

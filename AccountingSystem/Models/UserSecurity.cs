@@ -15,7 +15,14 @@ namespace AccountingSystem.Models
         public DateTime? SuspendedFrom { get; set; }
         public DateTime? SuspendedUntil { get; set; }
 
-        // Convenience: active flag (optional, useful)
+        // Convenience: active flag
         public bool IsActive { get; set; } = true;
+
+        [StringLength(200)]
+        public string? SecurityQuestion { get; set; }
+
+        // Store hash
+        [StringLength(128)]
+        public string? SecurityAnswerHash { get; set; }
     }
 }
