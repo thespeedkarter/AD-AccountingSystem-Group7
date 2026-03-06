@@ -31,11 +31,35 @@ namespace AccountingSystem.Pages.Journal
 
         public JournalEntry Entry { get; set; } = default!;
 
-        [TempData] public string? StatusMessage { get; set; }
-        [TempData] public string? ErrorMessage { get; set; }
+[TempData] public string? StatusMessage { get; set; }
+[TempData] public string? ErrorMessage { get; set; }
 
-        [BindProperty]
-        public IFormFile? UploadFile { get; set; }
+[BindProperty]
+public IFormFile? UploadFile { get; set; }
+
+// -- CanPost: computed property used by the view to enable/disable the Post button.
+// -- Returns true only when the entry is Approved, balanced (debits == credits > 0),
+// -- and has not already been Posted.
+public bool CanPost
+{
+    get
+    {
+        if (Entry == null) return false;
+
+        // -- Must be in Approved status - not Pending, Rejected, or already Posted
+        if (Entry.Status != JournalStatus.Approved) return false;
+
+        // -- Must have at least one line
+        if (Entry.Lines == null || !Entry.Lines.Any()) return false;
+
+        // -- Debits and credits must be equal and greater than zero
+        var totalDebits = Entry.Lines.Sum(l => l.Debit);
+        var totalCredits = Entry.Lines.Sum(l => l.Credit);
+        if (totalDebits != totalCredits || totalDebits <= 0m) return false;
+
+        return true;
+    }
+}
 
         public async Task<IActionResult> OnGetAsync(int id)
         {
