@@ -2,7 +2,7 @@
 
 ## Group 7 Accounting System
 
-**Course:** SWE4713 - Software Engineering | **Team:** Group 7 | **Version:** 1.0 | **Date:** [FILL IN]
+**Course:** SWE4713 - Software Engineering | **Team:** Group 7 | **Version:** 1.0 | **Date:** February 15, 2026
 
 ---
 
