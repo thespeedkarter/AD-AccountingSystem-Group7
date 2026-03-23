@@ -7,24 +7,36 @@
 
 <h2>Chart of Accounts</h2>
 
+@if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+{
+    <div class="alert alert-success">@Model.StatusMessage</div>
+}
+@if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+
 <form method="get" class="row g-2 mb-3">
-    <div class="col-md-4">
-        <input class="form-control" name="Search" value="@Model.Search" placeholder="Search by account name or number" />
+    <div class="col-md-3">
+        <input class="form-control" name="Search" value="@Model.Search" placeholder="Search name or number" title="Search by account name or account number" />
     </div>
 
-    <div class="col-md-3">
-        <select class="form-select" name="Category">
+    <div class="col-md-2">
+        <select class="form-select" name="Category" title="Filter by category">
             <option value="">All Categories</option>
             @foreach (var c in Enum.GetValues<AccountCategory>())
             {
-                var selected = Model.Category.HasValue && Model.Category.Value == c;
-                <option value="@((int)c)" selected="@(selected ? "selected" : null)">@c</option>
+                <option value="@((int)c)" selected="@(Model.Category.HasValue && Model.Category.Value == c ? "selected" : null)">@c</option>
             }
         </select>
     </div>
 
-    <div class="col-md-3">
-        <input class="form-control" name="Subcategory" value="@Model.Subcategory" placeholder="Subcategory filter" />
+    <div class="col-md-2">
+        <input class="form-control" name="Subcategory" value="@Model.Subcategory" placeholder="Subcategory" title="Filter by subcategory" />
+    </div>
+
+    <div class="col-md-2">
+        <input class="form-control" name="Amount" value="@(Model.Amount?.ToString("0.00"))" placeholder="Amount" title="Filter by balance amount" />
     </div>
 
     <div class="col-md-2 d-flex align-items-center">
@@ -34,67 +46,84 @@
         </div>
     </div>
 
+    <div class="col-md-1">
+        <button class="btn btn-primary w-100" type="submit" title="Apply filters">Go</button>
+    </div>
+
     <div class="col-12">
-        <button class="btn btn-primary" type="submit">Apply</button>
-        <a class="btn btn-outline-secondary" asp-page="./Index">Reset</a>
-
-        <a class="btn btn-outline-dark ms-2" asp-page="./Logs">All Event Logs</a>
-
         @if (Model.IsAdmin)
         {
-            <a class="btn btn-success float-end" asp-page="./Create">+ Add Account</a>
+            <a class="btn btn-success" asp-page="./Create" title="Add a new account">+ Add Account</a>
         }
+        <a class="btn btn-outline-secondary" asp-page="./Index" title="Clear all filters">Reset</a>
     </div>
 </form>
 
 @if (Model.Accounts.Count == 0)
 {
-    <p>No accounts found.</p>
+    <p class="text-muted">No accounts found.</p>
 }
 else
 {
-    <table class="table table-striped table-hover">
+    <table class="table table-striped table-hover align-middle">
         <thead>
             <tr>
+                <th>Order</th>
                 <th>Number</th>
                 <th>Name</th>
                 <th>Category</th>
                 <th>Subcategory</th>
+                <th>Statement</th>
+                <th class="text-end">Initial</th>
+                <th class="text-end">Debit</th>
+                <th class="text-end">Credit</th>
                 <th class="text-end">Balance</th>
                 <th>Status</th>
-                <th class="text-end">Actions</th>
+                @if (Model.IsAdmin)
+                {
+                    <th class="text-end">Actions</th>
+                }
             </tr>
         </thead>
         <tbody>
             @foreach (var a in Model.Accounts)
             {
                 <tr>
+                    <td>@a.OrderCode</td>
                     <td>@a.AccountNumber</td>
                     <td>
-                        <a asp-page="/Ledger/Index" asp-route-accountId="@a.ChartAccountId">
+                        <a asp-page="/Ledger/Index" asp-route-accountId="@a.ChartAccountId" asp-route-id="@a.ChartAccountId" title="Open this account in the ledger">
                             @a.AccountName
                         </a>
                     </td>
                     <td>@a.Category</td>
                     <td>@a.Subcategory</td>
+                    <td>@a.Statement</td>
+                    <td class="text-end">@a.InitialBalance.ToString("N2")</td>
+                    <td class="text-end">@a.Debit.ToString("N2")</td>
+                    <td class="text-end">@a.Credit.ToString("N2")</td>
                     <td class="text-end">@a.Balance.ToString("N2")</td>
-                    <td>@(a.IsActive ? "Active" : "Inactive")</td>
-                    <td class="text-end">
-                        <a class="btn btn-sm btn-outline-secondary"
-                           asp-page="./Logs"
-                           asp-route-RecordId="@a.ChartAccountId">
-                            Logs
-                        </a>
-
-                        @if (Model.IsAdmin)
+                    <td>
+                        @if (a.IsActive)
                         {
-                            <a class="btn btn-sm btn-outline-primary ms-1"
-                               asp-page="./Edit"
-                               asp-route-id="@a.ChartAccountId">
-                                Edit
-                            </a>
+                            <span class="badge bg-success">Active</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Inactive</span>
                         }
                     </td>
+                    @if (Model.IsAdmin)
+                    {
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-outline-primary"
+                               asp-page="./Edit"
+                               asp-route-id="@a.ChartAccountId"
+                               title="Edit this account">
+                                Edit
+                            </a>
+                        </td>
+                    }
                 </tr>
             }
         </tbody>

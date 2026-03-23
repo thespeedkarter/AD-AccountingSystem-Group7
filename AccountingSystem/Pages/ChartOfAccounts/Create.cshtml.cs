@@ -1,6 +1,6 @@
+using System.Text.Json;
 using AccountingSystem.Data;
 using AccountingSystem.Models;
-using AccountingSystem.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -14,71 +14,67 @@ namespace AccountingSystem.Pages.ChartOfAccounts
     {
         private readonly ApplicationDbContext _db;
         private readonly UserManager<IdentityUser> _userManager;
-        private readonly IEventLogger _logger;
 
-        public CreateModel(ApplicationDbContext db, UserManager<IdentityUser> userManager, IEventLogger logger)
+        public CreateModel(ApplicationDbContext db, UserManager<IdentityUser> userManager)
         {
             _db = db;
             _userManager = userManager;
-            _logger = logger;
         }
 
         [BindProperty]
-        public ChartAccount Account { get; set; } = new ChartAccount();
+        public ChartAccount Input { get; set; } = new();
 
-        public void OnGet() { }
+        public void OnGet()
+        {
+            Input.IsActive = true;
+        }
 
         public async Task<IActionResult> OnPostAsync()
         {
-            if (!ModelState.IsValid) return Page();
-
-            // Duplicates not allowed
-            if (await _db.ChartAccounts.AnyAsync(a => a.AccountName == Account.AccountName))
-            {
-                ModelState.AddModelError(string.Empty, "Account name already exists.");
+            if (!ModelState.IsValid)
                 return Page();
-            }
 
-            if (await _db.ChartAccounts.AnyAsync(a => a.AccountNumber == Account.AccountNumber))
-            {
-                ModelState.AddModelError(string.Empty, "Account number already exists.");
+            // duplicate checks
+            if (await _db.ChartAccounts.AnyAsync(a => a.AccountNumber == Input.AccountNumber))
+                ModelState.AddModelError(string.Empty, "Duplicate account number is not allowed.");
+
+            if (await _db.ChartAccounts.AnyAsync(a => a.AccountName == Input.AccountName))
+                ModelState.AddModelError(string.Empty, "Duplicate account name is not allowed.");
+
+            if (!ModelState.IsValid)
                 return Page();
-            }
 
-            Account.AddedAtUtc = DateTime.UtcNow;
-            Account.AddedByUserId = _userManager.GetUserId(User);
-            Account.Balance = Account.InitialBalance;
+            Input.AddedAtUtc = DateTime.UtcNow;
+            Input.AddedByUserId = _userManager.GetUserId(User);
+            Input.IsActive = true;
 
-            _db.ChartAccounts.Add(Account);
+            _db.ChartAccounts.Add(Input);
             await _db.SaveChangesAsync();
 
-            // Event log: Created
-            await _logger.LogAsync(
-                tableName: "ChartAccounts",
-                recordId: Account.ChartAccountId,
-                action: EventAction.Created,
-                before: null,
-                after: new
+            _db.EventLogs.Add(new EventLog
+            {
+                TableName = "ChartAccounts",
+                RecordId = Input.ChartAccountId,
+                Action = (int)EventAction.Create,
+                BeforeJson = null,
+                AfterJson = JsonSerializer.Serialize(new
                 {
-                    Account.ChartAccountId,
-                    Account.AccountName,
-                    Account.AccountNumber,
-                    Account.Description,
-                    Account.NormalSide,
-                    Account.Category,
-                    Account.Subcategory,
-                    Account.InitialBalance,
-                    Account.Debit,
-                    Account.Credit,
-                    Account.Balance,
-                    Account.OrderCode,
-                    Account.Statement,
-                    Account.Comment,
-                    Account.IsActive
-                },
-                userId: Account.AddedByUserId
-            );
+                    Input.ChartAccountId,
+                    Input.AccountNumber,
+                    Input.AccountName,
+                    Input.Category,
+                    Input.Subcategory,
+                    Input.InitialBalance,
+                    Input.Balance,
+                    Input.IsActive
+                }),
+                UserId = _userManager.GetUserId(User),
+                CreatedAtUtc = DateTime.UtcNow
+            });
 
+            await _db.SaveChangesAsync();
+
+            TempData["StatusMessage"] = "Account created.";
             return RedirectToPage("./Index");
         }
     }

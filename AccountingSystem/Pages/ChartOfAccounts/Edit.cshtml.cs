@@ -1,6 +1,6 @@
+using System.Text.Json;
 using AccountingSystem.Data;
 using AccountingSystem.Models;
-using AccountingSystem.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -14,114 +14,98 @@ namespace AccountingSystem.Pages.ChartOfAccounts
     {
         private readonly ApplicationDbContext _db;
         private readonly UserManager<IdentityUser> _userManager;
-        private readonly IEventLogger _logger;
 
-        public EditModel(ApplicationDbContext db, UserManager<IdentityUser> userManager, IEventLogger logger)
+        public EditModel(ApplicationDbContext db, UserManager<IdentityUser> userManager)
         {
             _db = db;
             _userManager = userManager;
-            _logger = logger;
         }
 
         [BindProperty]
-        public ChartAccount Account { get; set; } = default!;
+        public ChartAccount Input { get; set; } = new();
+
+        [TempData] public string? StatusMessage { get; set; }
+        [TempData] public string? ErrorMessage { get; set; }
 
         public async Task<IActionResult> OnGetAsync(int id)
         {
             var acct = await _db.ChartAccounts.FirstOrDefaultAsync(a => a.ChartAccountId == id);
             if (acct == null) return NotFound();
-            Account = acct;
+
+            Input = acct;
             return Page();
         }
 
         public async Task<IActionResult> OnPostAsync()
         {
-            if (!ModelState.IsValid) return Page();
-
-            // Load existing for before-image
             var existing = await _db.ChartAccounts.AsNoTracking()
-                .FirstOrDefaultAsync(a => a.ChartAccountId == Account.ChartAccountId);
+                .FirstOrDefaultAsync(a => a.ChartAccountId == Input.ChartAccountId);
 
             if (existing == null) return NotFound();
 
-            // Prevent duplicates (exclude self)
-            if (await _db.ChartAccounts.AnyAsync(a => a.ChartAccountId != Account.ChartAccountId && a.AccountName == Account.AccountName))
-            {
-                ModelState.AddModelError(string.Empty, "Account name already exists.");
+            if (!ModelState.IsValid)
                 return Page();
-            }
 
-            if (await _db.ChartAccounts.AnyAsync(a => a.ChartAccountId != Account.ChartAccountId && a.AccountNumber == Account.AccountNumber))
-            {
-                ModelState.AddModelError(string.Empty, "Account number already exists.");
+            if (await _db.ChartAccounts.AnyAsync(a => a.ChartAccountId != Input.ChartAccountId && a.AccountNumber == Input.AccountNumber))
+                ModelState.AddModelError(string.Empty, "Duplicate account number is not allowed.");
+
+            if (await _db.ChartAccounts.AnyAsync(a => a.ChartAccountId != Input.ChartAccountId && a.AccountName == Input.AccountName))
+                ModelState.AddModelError(string.Empty, "Duplicate account name is not allowed.");
+
+            if (!ModelState.IsValid)
                 return Page();
-            }
 
-            _db.Attach(Account).State = EntityState.Modified;
+            _db.ChartAccounts.Update(Input);
             await _db.SaveChangesAsync();
 
-            var userId = _userManager.GetUserId(User);
+            _db.EventLogs.Add(new EventLog
+            {
+                TableName = "ChartAccounts",
+                RecordId = Input.ChartAccountId,
+                Action = (int)EventAction.Update,
+                BeforeJson = JsonSerializer.Serialize(existing),
+                AfterJson = JsonSerializer.Serialize(Input),
+                UserId = _userManager.GetUserId(User),
+                CreatedAtUtc = DateTime.UtcNow
+            });
 
-            await _logger.LogAsync(
-                tableName: "ChartAccounts",
-                recordId: Account.ChartAccountId,
-                action: EventAction.Updated,
-                before: existing,
-                after: Account,
-                userId: userId
-            );
+            await _db.SaveChangesAsync();
 
-            return RedirectToPage("./Index");
+            StatusMessage = "Account updated.";
+            return RedirectToPage("./Edit", new { id = Input.ChartAccountId });
         }
 
-        public async Task<IActionResult> OnPostDeactivateAsync(int id)
+        public async Task<IActionResult> OnPostDeactivateAsync()
         {
-            var acct = await _db.ChartAccounts.FirstOrDefaultAsync(a => a.ChartAccountId == id);
+            var acct = await _db.ChartAccounts.FirstOrDefaultAsync(a => a.ChartAccountId == Input.ChartAccountId);
             if (acct == null) return NotFound();
 
             if (acct.Balance > 0)
             {
-                TempData["Error"] = "Accounts with a balance greater than zero cannot be deactivated.";
-                return RedirectToPage("./Edit", new { id });
+                ErrorMessage = "Accounts with balance greater than zero cannot be deactivated.";
+                return RedirectToPage("./Edit", new { id = acct.ChartAccountId });
             }
 
-            var before = new { acct.ChartAccountId, acct.AccountName, acct.AccountNumber, acct.IsActive, acct.Balance };
+            var before = JsonSerializer.Serialize(acct);
 
             acct.IsActive = false;
             await _db.SaveChangesAsync();
 
-            await _logger.LogAsync(
-                tableName: "ChartAccounts",
-                recordId: acct.ChartAccountId,
-                action: EventAction.Deactivated,
-                before: before,
-                after: new { acct.ChartAccountId, acct.AccountName, acct.AccountNumber, acct.IsActive, acct.Balance },
-                userId: _userManager.GetUserId(User)
-            );
+            _db.EventLogs.Add(new EventLog
+            {
+                TableName = "ChartAccounts",
+                RecordId = acct.ChartAccountId,
+                Action = (int)EventAction.Deactivate,
+                BeforeJson = before,
+                AfterJson = JsonSerializer.Serialize(acct),
+                UserId = _userManager.GetUserId(User),
+                CreatedAtUtc = DateTime.UtcNow
+            });
 
-            return RedirectToPage("./Index");
-        }
-
-        public async Task<IActionResult> OnPostActivateAsync(int id)
-        {
-            var acct = await _db.ChartAccounts.FirstOrDefaultAsync(a => a.ChartAccountId == id);
-            if (acct == null) return NotFound();
-
-            var before = new { acct.ChartAccountId, acct.AccountName, acct.AccountNumber, acct.IsActive, acct.Balance };
-
-            acct.IsActive = true;
             await _db.SaveChangesAsync();
 
-            await _logger.LogAsync(
-                tableName: "ChartAccounts",
-                recordId: acct.ChartAccountId,
-                action: EventAction.Activated,
-                before: before,
-                after: new { acct.ChartAccountId, acct.AccountName, acct.AccountNumber, acct.IsActive, acct.Balance },
-                userId: _userManager.GetUserId(User)
-            );
-
-            return RedirectToPage("./Edit", new { id });
+            StatusMessage = "Account deactivated.";
+            return RedirectToPage("./Edit", new { id = acct.ChartAccountId });
         }
     }
 }

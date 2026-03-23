@@ -7,69 +7,86 @@
 
 <h2>Add Account</h2>
 
-<form method="post">
-    <div asp-validation-summary="All" class="text-danger"></div>
+<div asp-validation-summary="All" class="text-danger"></div>
 
-    <div class="row">
-        <div class="col-md-6 mb-3">
-            <label class="form-label">Account Name</label>
-            <input class="form-control" asp-for="Account.AccountName" />
-        </div>
-
-        <div class="col-md-6 mb-3">
-            <label class="form-label">Account Number</label>
-            <input class="form-control" asp-for="Account.AccountNumber" />
-        </div>
+<form method="post" class="row g-3">
+    <div class="col-md-6">
+        <label class="form-label">Account Name</label>
+        <input class="form-control" asp-for="Input.AccountName" title="Enter the account name" />
     </div>
 
-    <div class="mb-3">
+    <div class="col-md-6">
+        <label class="form-label">Account Number</label>
+        <input class="form-control" asp-for="Input.AccountNumber" type="number" step="1" title="Enter a whole-number account number" />
+    </div>
+
+    <div class="col-md-12">
         <label class="form-label">Description</label>
-        <textarea class="form-control" asp-for="Account.Description"></textarea>
+        <textarea class="form-control" asp-for="Input.Description" rows="2" title="Enter the account description"></textarea>
     </div>
 
-    <div class="row">
-        <div class="col-md-4 mb-3">
-            <label class="form-label">Normal Side</label>
-            <select class="form-select" asp-for="Account.NormalSide" asp-items="Html.GetEnumSelectList<NormalSide>()"></select>
-        </div>
-
-        <div class="col-md-4 mb-3">
-            <label class="form-label">Category</label>
-            <select class="form-select" asp-for="Account.Category" asp-items="Html.GetEnumSelectList<AccountCategory>()"></select>
-        </div>
-
-        <div class="col-md-4 mb-3">
-            <label class="form-label">Subcategory</label>
-            <input class="form-control" asp-for="Account.Subcategory" />
-        </div>
+    <div class="col-md-4">
+        <label class="form-label">Normal Side</label>
+        <select class="form-select" asp-for="Input.NormalSide" title="Select the normal side">
+            @foreach (var n in Enum.GetValues<NormalSide>())
+            {
+                <option value="@((int)n)">@n</option>
+            }
+        </select>
     </div>
 
-    <div class="row">
-        <div class="col-md-4 mb-3">
-            <label class="form-label">Initial Balance</label>
-            <input class="form-control" asp-for="Account.InitialBalance" />
-        </div>
-
-        <div class="col-md-4 mb-3">
-            <label class="form-label">Order</label>
-            <input class="form-control" asp-for="Account.OrderCode" />
-        </div>
-
-        <div class="col-md-4 mb-3">
-            <label class="form-label">Statement</label>
-            <select class="form-select" asp-for="Account.Statement">
-                <option value="BS">BS</option>
-                <option value="IS">IS</option>
-                <option value="RE">RE</option>
-            </select>
-        </div>
+    <div class="col-md-4">
+        <label class="form-label">Category</label>
+        <select class="form-select" asp-for="Input.Category" title="Select the account category">
+            @foreach (var c in Enum.GetValues<AccountCategory>())
+            {
+                <option value="@((int)c)">@c</option>
+            }
+        </select>
     </div>
 
-    <div class="mb-3">
+    <div class="col-md-4">
+        <label class="form-label">Subcategory</label>
+        <input class="form-control" asp-for="Input.Subcategory" title="Enter the account subcategory" />
+    </div>
+
+    <div class="col-md-3">
+        <label class="form-label">Initial Balance</label>
+        <input class="form-control" asp-for="Input.InitialBalance" type="number" step="0.01" title="Enter the initial balance" />
+    </div>
+
+    <div class="col-md-3">
+        <label class="form-label">Debit</label>
+        <input class="form-control" asp-for="Input.Debit" type="number" step="0.01" title="Enter debit amount" />
+    </div>
+
+    <div class="col-md-3">
+        <label class="form-label">Credit</label>
+        <input class="form-control" asp-for="Input.Credit" type="number" step="0.01" title="Enter credit amount" />
+    </div>
+
+    <div class="col-md-3">
+        <label class="form-label">Balance</label>
+        <input class="form-control" asp-for="Input.Balance" type="number" step="0.01" title="Enter current balance" />
+    </div>
+
+    <div class="col-md-4">
+        <label class="form-label">Order</label>
+        <input class="form-control" asp-for="Input.OrderCode" title="Enter account order such as 01" />
+    </div>
+
+    <div class="col-md-4">
+        <label class="form-label">Statement</label>
+        <input class="form-control" asp-for="Input.Statement" title="Enter statement such as BS, IS, or RE" />
+    </div>
+
+    <div class="col-md-4">
         <label class="form-label">Comment</label>
-        <input class="form-control" asp-for="Account.Comment" />
+        <input class="form-control" asp-for="Input.Comment" title="Optional comment" />
     </div>
 
-    <button class="btn btn-primary" type="submit">Save</button>
-    <a class="btn btn-outline-secondary" asp-page="./Index">Cancel</a>
+    <div class="col-12">
+        <button class="btn btn-success" type="submit" title="Save this account">Save Account</button>
+        <a class="btn btn-outline-secondary" asp-page="./Index" title="Return to chart of accounts">Back</a>
+    </div>
 </form>

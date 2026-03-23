@@ -2,15 +2,64 @@
 @{
     ViewData["Title"] = "Help";
 }
-<h2>Help</h2>
 
-<p>This software provides:</p>
+<h2>Help & System Overview</h2>
+
+<p class="text-muted">
+    Welcome to the Accounting System. This page provides an overview of system features and how to use them.
+</p>
+
+<hr />
+
+<h5>🔐 Login & Security</h5>
 <ul>
-    <li>Secure login with roles (Administrator, Manager, Accountant)</li>
-    <li>Access Requests workflow (admin approves/rejects)</li>
-    <li>Password reset and password expiration rules</li>
-    <li>Chart of Accounts (Sprint 2)</li>
-    <li>Journalizing & Ledger (Sprint 3)</li>
-    <li>Financial Statements (Sprint 4)</li>
-    <li>Ratios Dashboard (Sprint 5)</li>
+    <li>Users must log in using their assigned credentials.</li>
+    <li>The system supports three roles: <strong>Administrator</strong>, <strong>Manager</strong>, and <strong>Accountant</strong>.</li>
+    <li>Accounts are locked after multiple failed login attempts.</li>
+    <li>Passwords must meet security requirements and expire periodically.</li>
+    <li>The “Forgot Password” feature allows users to reset their password using security verification.</li>
 </ul>
+
+<h5>👤 User Access Requests</h5>
+<ul>
+    <li>New users must request access through the <strong>Create New User</strong> page.</li>
+    <li>Administrators review and approve or reject requests.</li>
+    <li>Approved users receive login credentials.</li>
+</ul>
+
+<h5>🗂 Chart of Accounts</h5>
+<ul>
+    <li>Administrators can create, edit, and deactivate accounts.</li>
+    <li>Accounts include categories, subcategories, and balances.</li>
+    <li>Duplicate account names or numbers are not allowed.</li>
+    <li>Clicking an account opens its ledger view.</li>
+    <li>Search and filter tools help locate accounts quickly.</li>
+</ul>
+
+<h5>📘 Journal & Ledger</h5>
+<ul>
+    <li>Users can create journal entries with debit and credit lines.</li>
+    <li>Managers approve or reject journal entries.</li>
+    <li>Approved entries can be posted to the ledger.</li>
+    <li>The ledger displays account balances and transaction history.</li>
+</ul>
+
+<h5>📊 Reports & Future Features</h5>
+<ul>
+    <li>Financial statements (Income Statement, Balance Sheet, etc.) will be available in later sprints.</li>
+    <li>Ratio analysis and dashboards will be added in future releases.</li>
+</ul>
+
+<hr />
+
+<h5>🧭 Navigation Tips</h5>
+<ul>
+    <li>Use the top navigation bar to access system features.</li>
+    <li>Administrator tools are available under the <strong>Admin</strong> menu.</li>
+    <li>Click your name in the top right to manage your account or log out.</li>
+</ul>
+
+<h5>📩 Support</h5>
+<p>
+    If you experience issues, please contact your system administrator or refer to the system documentation.
+</p>

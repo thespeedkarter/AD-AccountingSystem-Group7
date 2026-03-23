@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AccountingSystem.Pages.ChartOfAccounts
 {
-    [Authorize] // all logged-in users can view
+    [Authorize]
     public class IndexModel : PageModel
     {
         private readonly ApplicationDbContext _db;
@@ -19,17 +19,14 @@ namespace AccountingSystem.Pages.ChartOfAccounts
 
         public List<ChartAccount> Accounts { get; set; } = new();
 
-        [BindProperty(SupportsGet = true)]
-        public string? Search { get; set; } // name or number
+        [BindProperty(SupportsGet = true)] public string? Search { get; set; }
+        [BindProperty(SupportsGet = true)] public AccountCategory? Category { get; set; }
+        [BindProperty(SupportsGet = true)] public string? Subcategory { get; set; }
+        [BindProperty(SupportsGet = true)] public decimal? Amount { get; set; }
+        [BindProperty(SupportsGet = true)] public bool ShowInactive { get; set; }
 
-        [BindProperty(SupportsGet = true)]
-        public AccountCategory? Category { get; set; }
-
-        [BindProperty(SupportsGet = true)]
-        public string? Subcategory { get; set; }
-
-        [BindProperty(SupportsGet = true)]
-        public bool ShowInactive { get; set; } = false;
+        [TempData] public string? StatusMessage { get; set; }
+        [TempData] public string? ErrorMessage { get; set; }
 
         public bool IsAdmin => User.IsInRole("Administrator");
 
@@ -44,20 +41,32 @@ namespace AccountingSystem.Pages.ChartOfAccounts
                 q = q.Where(a => a.Category == Category.Value);
 
             if (!string.IsNullOrWhiteSpace(Subcategory))
-                q = q.Where(a => a.Subcategory != null && a.Subcategory.Contains(Subcategory));
+            {
+                var sub = Subcategory.Trim();
+                q = q.Where(a => a.Subcategory != null && a.Subcategory.Contains(sub));
+            }
+
+            if (Amount.HasValue)
+                q = q.Where(a => a.Balance == Amount.Value);
 
             if (!string.IsNullOrWhiteSpace(Search))
             {
                 var s = Search.Trim();
 
-                if (int.TryParse(s, out var acctNum))
-                    q = q.Where(a => a.AccountNumber == acctNum);
+                if (int.TryParse(s, out var acctNumber))
+                {
+                    q = q.Where(a => a.AccountNumber == acctNumber || a.AccountName.Contains(s));
+                }
                 else
+                {
                     q = q.Where(a => a.AccountName.Contains(s));
+                }
             }
 
             Accounts = await q
-                .OrderBy(a => a.AccountNumber)
+                .OrderBy(a => a.OrderCode)
+                .ThenBy(a => a.AccountNumber)
+                .Take(500)
                 .ToListAsync();
         }
     }
