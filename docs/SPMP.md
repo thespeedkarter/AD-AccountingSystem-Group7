@@ -50,9 +50,9 @@ The system is designed to enforce proper accounting procedures (balanced debits 
 
 | Team Member | Role | Primary Responsibilities |
 |-------------|------|--------------------------|
-| Wilfred Faltz | Development Manager | Lead development across all sprints, GitHub management, sprint coordination, architectural decisions |
+| Seth Venable | Development Manager | Lead development across all sprints, GitHub management, sprint coordination, architectural decisions |
 | Alejandro Garcia Soto | Frontend and Environment Lead | Razor view implementation, CSS and UI styling, Mac development environment setup and documentation |
-| Seth Venable | QA and Testing Lead | Test case development and execution, bug reporting, browser compatibility testing |
+| Wilfred Faltz | QA and Testing Lead | Test case development and execution, bug reporting, browser compatibility testing |
 | Landon Clark | Backend Developer | Page model business logic, EF Core data access layer, database schema design |
 | Luke Odom | Documentation and Planning Manager | Sprint planning, technical writing, document maintenance, milestone tracking |
 

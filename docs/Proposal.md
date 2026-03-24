@@ -148,7 +148,7 @@ The team holds weekly meetings to review progress, coordinate sprint work, and r
 | SRS | Software Requirements Specification with all functional and non-functional requirements | Markdown |
 | SDT | Software Design and Testing document with architecture, database design, and test cases | Markdown |
 | User Manual | End-user guide for all three roles (Administrator, Manager, Accountant) | Markdown |
-| Oral Presentation and Live Demo | A 15-minute team presentation covering the project proposal, architecture, and live demonstration of the working application | In-person, with PowerPoint slides |
+| Oral Presentation and Live Demo | A 15-minute team presentation covering the project proposal, architecture, and live demonstration of the working application | With PowerPoint slides |
 
 ### Beneficiaries
 
