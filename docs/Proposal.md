@@ -2,8 +2,8 @@
 
 **Course:** SWE4713 - Software Engineering
 **Team:** Group 7
-**Date:** [FILL IN: Submission date]
-**Submitted To:** [FILL IN: Professor name]
+**Date:** May 3, 2026
+**Submitted To:** Dr. Jerry Mamo
 
 ---
 
@@ -84,7 +84,7 @@ The team uses Git and GitHub for version control, with the repository named "AD-
 
 ### Meetings and Communication
 
-[FILL IN: Describe team meeting frequency and communication tools used, e.g., "The team met twice weekly via Discord for sprint planning and progress check-ins, with additional ad-hoc communication through a group text channel."]
+The team holds weekly meetings to review progress, coordinate sprint work, and resolve blockers. Primary communication channels are GroupMe for quick day-to-day coordination and Microsoft Teams for structured meetings and file sharing.
 
 ### Tools Used
 
@@ -130,7 +130,8 @@ The team uses Git and GitHub for version control, with the repository named "AD-
 - **Accounting Domain Knowledge:** Understanding of chart of accounts structure, debit/credit mechanics, normal sides, journal entry workflows, ledger posting, trial balance preparation, financial statement generation (income statement, balance sheet, retained earnings), and financial ratio analysis.
 - **Git / GitHub:** Version control fundamentals including committing, pushing, branching, and managing a shared repository for collaborative development.
 - **Security Best Practices:** Knowledge of password hashing (PBKDF2), anti-forgery token protection (CSRF prevention), input validation, and role-based authorization patterns.
-- [FILL IN: Any additional skills your team used, e.g., deployment, cloud hosting, testing frameworks]
+- **Bootstrap 5 (CSS Framework):** The responsive CSS framework used for page layout, navigation components, cards, alerts, form styling, and the grid system that provides consistent spacing and mobile-friendly design.
+- **File Upload Handling:** Server-side file validation, storage management, and MIME type verification for journal entry source document attachments (PDF, Word, Excel, CSV, and image formats).
 
 ---
 
@@ -147,7 +148,7 @@ The team uses Git and GitHub for version control, with the repository named "AD-
 | SRS | Software Requirements Specification with all functional and non-functional requirements | Markdown |
 | SDT | Software Design and Testing document with architecture, database design, and test cases | Markdown |
 | User Manual | End-user guide for all three roles (Administrator, Manager, Accountant) | Markdown |
-| [FILL IN: Oral presentation / demo] | [FILL IN: Description of presentation deliverable] | [FILL IN: Format] |
+| Oral Presentation and Live Demo | A 15-minute team presentation covering the project proposal, architecture, and live demonstration of the working application | With PowerPoint slides |
 
 ### Beneficiaries
 
@@ -171,12 +172,12 @@ What makes this project distinct is its purpose and design context. Built as an 
 
 ## 1.9 Proprietary Information and Confidentiality Requirements
 
-- The source code for this application is the intellectual property of Group 7 and [FILL IN: University/Institution name], developed as part of the SWE4713 Software Engineering course.
+- The source code for this application is the intellectual property of Group 7 and Kennesaw State University, developed as part of the SWE4713 Software Engineering course.
 - No real client financial data is used anywhere in the system. All test data, including user accounts, chart of accounts entries, and journal transactions, is fabricated for demonstration and testing purposes.
 - The application handles sensitive authentication credentials. All passwords are encrypted using ASP.NET Identity's built-in PBKDF2 with HMAC-SHA256 password hashing. Security question answers are hashed using SHA-256 before storage.
 - The database contains user account information (usernames, email addresses, hashed passwords) which should be treated as confidential in any production deployment.
 - The default administrator account credentials (admin@local.test / Admin!234) seeded in the database are intended for development only and must be changed before any production deployment.
-- The codebase is stored in a [FILL IN: public/private] GitHub repository under the name "AD-AccountingSystem-Group7."
+- The source code is stored in a public GitHub repository at https://github.com/thespeedkarter/AD-AccountingSystem-Group7.
 
 ---
 
@@ -191,8 +192,8 @@ What makes this project distinct is its purpose and design context. Built as an 
 | SQLite | Alternative local database | For macOS development environments |
 | Web browser | Testing, debugging, and end-user access | Chrome (recommended), Firefox, Edge, Safari |
 | Internet connection | GitHub access, NuGet package restoration | Required during development and deployment |
-| SMTP email service | Password recovery and notification emails | [FILL IN: Currently using database outbox pattern (DbEmailSender) - no external SMTP configured for development. Specify production SMTP provider if applicable.] |
-| [FILL IN: Any other facilities your team used, e.g., shared hosting server, Azure subscription, classroom lab] | | |
+| SMTP email service | Password recovery and notification emails | Custom database-backed email sender (DbEmailSender) - production SMTP configuration required for email delivery |
+| Cloudflare Tunnel | Application hosting and public access | Used via trycloudflare.com to expose the local development server for demonstration and grading |
 
 ---
 
@@ -206,7 +207,10 @@ What makes this project distinct is its purpose and design context. Built as an 
 - All financial data entered by users is assumed to be accurate; the system validates format and balance but not the business truthfulness of transactions.
 - Email functionality assumes a configured SMTP server is available for production deployment. During development, emails are stored in the database outbox table (SentEmails) rather than being sent externally.
 - The system will be used by a small-to-medium number of concurrent users (not designed for enterprise-scale load).
-- [FILL IN: Any other assumptions your team made]
+- The system assumes at least one Administrator account exists in the database, seeded automatically at application startup via the SeedRolesAndAdminAsync method in Program.cs.
+- Uploaded source documents are stored on the server file system under wwwroot/uploads/ and the application assumes sufficient disk space is available.
+- The database schema is applied via Entity Framework Core migrations. The server environment is assumed to have migration tooling or a pre-migrated database available.
+- The three roles (Administrator, Manager, Accountant) are seeded on first startup and are not expected to be modified or extended at runtime.
 
 ### Constraints
 
@@ -225,7 +229,11 @@ What makes this project distinct is its purpose and design context. Built as an 
 - Rejected journal entries include a mandatory manager comment explaining the reason for rejection.
 - Only approved journal entries can be posted to the ledger.
 - File uploads on journal entries are limited to 25 MB per file and restricted to the following types: PDF, DOC, DOCX, XLS, XLSX, CSV, JPG, JPEG, PNG.
-- [FILL IN: Any other constraints discovered or imposed by the project requirements]
+- SQL Server is required for production deployment; SQLite is supported for local macOS development only.
+- Journal entry descriptions are limited to 200 characters; manager rejection comments are limited to 500 characters.
+- Account names are limited to 120 characters; account descriptions and comments are limited to 500 characters each.
+- The order code field on chart of accounts entries is limited to 10 characters; the statement field is limited to 5 characters (IS, BS, or RE).
+- Security question text is limited to 200 characters and the hashed answer to 128 characters.
 
 ---
 
@@ -233,17 +241,16 @@ What makes this project distinct is its purpose and design context. Built as an 
 
 | Stakeholder | Role | Interest / Expectation |
 |-------------|------|------------------------|
-| Course Instructor | Project evaluator | System meets all sprint requirements, follows software engineering principles, documentation is complete |
-| [FILL IN: Instructor name] | | |
-| Group 7 Team Members | Developers | Successfully deliver a working system on schedule across all five sprints |
-| [FILL IN: Team member 1 name] | [FILL IN: Role] | [FILL IN] |
-| [FILL IN: Team member 2 name] | [FILL IN: Role] | [FILL IN] |
-| [FILL IN: Team member 3 name] | [FILL IN: Role] | [FILL IN] |
-| [FILL IN: Team member 4 name] | [FILL IN: Role] | [FILL IN] |
+| Dr. Jerry Mamo | Course Instructor | Project evaluation and grading against SWE4713 requirements |
+| Alejandro Garcia Soto | Developer - Group 7 | Successful delivery of a functional, well-documented accounting system |
+| Wilfred Faltz | Developer - Group 7 | Successful delivery of a functional, well-documented accounting system |
+| Seth Venable | Developer - Group 7 | Successful delivery of a functional, well-documented accounting system |
+| Landon Clark | Developer - Group 7 | Successful delivery of a functional, well-documented accounting system |
+| Luke Odom | Developer - Group 7 | Successful delivery of a functional, well-documented accounting system |
 | Administrator users | System admin role | Manage users, maintain chart of accounts, oversee system operations and audit logs |
 | Manager users | Financial oversight role | Approve/reject journal entries, post to ledger, generate financial reports |
 | Accountant users | Day-to-day accounting role | Create journal entries, attach source documents, view ledger and reports |
-| [FILL IN: University / Institution name] | Academic institution | Educational value and quality of the project |
+| Kennesaw State University | Academic institution | Educational value and quality of the project |
 
 ---
 
@@ -759,44 +766,38 @@ The following Gantt chart shows the project timeline organized by sprint.
 gantt
     title Group 7 Accounting System - Project Schedule
     dateFormat  YYYY-MM-DD
-    section Sprint 1 - User Interface and Auth
-    User login and registration         :s1a, 2026-02-01, 7d
-    Role management                     :s1b, after s1a, 5d
-    Password security features          :s1c, after s1a, 5d
-    User management and reports         :s1d, after s1b, 5d
-    Email notification system           :s1e, after s1c, 5d
+    section Sprint 1 - User Interface and Authentication
+    User login and registration          :s1a, 2026-01-13, 21d
+    Role management and user CRUD        :s1b, 2026-01-13, 28d
+    Password security and lockout        :s1c, 2026-01-20, 21d
+    User management reports              :s1d, 2026-02-10, 22d
     section Sprint 2 - Chart of Accounts
-    Account CRUD operations             :s2a, after s1e, 7d
-    Duplicate prevention and validation :s2b, after s2a, 3d
-    Search and filter functionality     :s2c, after s2a, 4d
-    Event logging system                :s2d, after s2b, 5d
+    Account CRUD operations              :s2a, 2026-03-05, 9d
+    Account filtering and search         :s2b, 2026-03-09, 7d
+    Event log implementation             :s2c, 2026-03-12, 10d
     section Sprint 3 - Journalizing and Ledger
-    Journal entry creation              :s3a, after s2d, 7d
-    Manager approval workflow           :s3b, after s3a, 5d
-    Ledger posting and PR links         :s3c, after s3b, 5d
-    File attachment support             :s3d, after s3a, 4d
+    Journal entry creation               :s3a, 2026-03-23, 4d
+    Manager approval workflow            :s3b, 2026-03-24, 4d
+    Ledger view and post references      :s3c, 2026-03-25, 5d
     section Sprint 4 - Financial Reports
-    Adjusting entries                   :s4a, after s3c, 5d
-    Trial balance generation            :s4b, after s4a, 5d
-    Income statement and balance sheet  :s4c, after s4b, 7d
-    Retained earnings statement         :s4d, after s4c, 3d
-    section Sprint 5 - Dashboard and Ratios
-    Ratio calculations                  :s5a, after s4d, 5d
-    Color-coded dashboard               :s5b, after s5a, 5d
-    Final testing and polish            :s5c, after s5b, 5d
+    Adjusting entries                    :s4a, 2026-03-31, 5d
+    Trial balance generation             :s4b, 2026-04-04, 5d
+    Income statement and balance sheet   :s4c, 2026-04-07, 6d
+    section Sprint 5 - Dashboard and Ratio Analysis
+    Ratio calculations and data layer    :s5a, 2026-04-14, 3d
+    Color-coded ratio dashboard          :s5b, 2026-04-16, 3d
+    Final integration and polish         :s5c, 2026-04-20, 13d
 ```
-
-[FILL IN: Replace the placeholder start date (2026-02-01) and durations above with your actual sprint schedule dates and durations.]
 
 ### Sprint Completion Status
 
 | Sprint | Module | Features | Status |
 |--------|--------|----------|--------|
-| 1 | User Interface and Authentication | Login, registration redirect, roles (Admin/Manager/Accountant), password security (complexity, expiry, history, lockout), user management (create, edit, activate, deactivate, suspend), access request workflow, email outbox, expired passwords report | [FILL IN] |
-| 2 | Chart of Accounts | Add/edit/deactivate accounts, duplicate prevention, integer-only account numbers, search by name/number, filter by category/subcategory, event log with before/after snapshots | [FILL IN] |
-| 3 | Journalizing and Ledger | Journal entry creation with balanced debits/credits, multi-line entries, manager approval/rejection workflow, ledger posting with running balances, post reference navigation, file attachments | [FILL IN] |
-| 4 | Adjusting Entries and Financial Reports | Adjusting entries, trial balance, income statement, balance sheet, retained earnings statement | [FILL IN] |
-| 5 | Dashboard and Ratio Analysis | Financial ratio calculations, color-coded health indicators, role-appropriate notifications | [FILL IN] |
+| 1 | User Interface and Authentication | Login, registration redirect, roles (Admin/Manager/Accountant), password security (complexity, expiry, history, lockout), user management (create, edit, activate, deactivate, suspend), access request workflow, email outbox, expired passwords report | Completed - March 4, 2026 |
+| 2 | Chart of Accounts | Add/edit/deactivate accounts, duplicate prevention, integer-only account numbers, search by name/number, filter by category/subcategory, event log with before/after snapshots | Completed - March 22, 2026 |
+| 3 | Journalizing and Ledger | Journal entry creation with balanced debits/credits, multi-line entries, manager approval/rejection workflow, ledger posting with running balances, post reference navigation, file attachments | In Progress - Due March 30, 2026 |
+| 4 | Adjusting Entries and Financial Reports | Adjusting entries, trial balance, income statement, balance sheet, retained earnings statement | Scheduled - Due April 13, 2026 |
+| 5 | Dashboard and Ratio Analysis | Financial ratio calculations, color-coded health indicators, role-appropriate notifications | Scheduled - Due April 20, 2026 |
 
 ---
 
@@ -804,12 +805,12 @@ gantt
 
 | Role | Name | Email | Responsibility |
 |------|------|-------|----------------|
-| Team Lead / Primary Contact | [FILL IN] | [FILL IN] | Main point of contact, sprint planning, GitHub management |
-| Backend Developer | [FILL IN] | [FILL IN] | C# page models, EF Core, business logic |
-| Frontend Developer | [FILL IN] | [FILL IN] | Razor views, CSS, JavaScript |
-| QA / Documentation | [FILL IN] | [FILL IN] | Testing, documentation, bug tracking |
-| [FILL IN: Additional team members] | [FILL IN] | [FILL IN] | [FILL IN] |
-| Course Instructor | [FILL IN] | [FILL IN] | Project oversight and grading |
+| Development Manager / Primary Contact | Wilfred Faltz | [FILL IN: email] | Lead developer, sprint coordination, GitHub repository management |
+| Frontend and Environment Lead | Alejandro Garcia Soto | [FILL IN: email] | Frontend development, Mac development environment, UI implementation |
+| QA and Testing Lead | Seth Venable | [FILL IN: email] | Test case execution, bug tracking, quality assurance |
+| Backend Developer | Landon Clark | [FILL IN: email] | Backend business logic, database design, EF Core implementation |
+| Documentation and Planning Manager | Luke Odom | [FILL IN: email] | Sprint planning, documentation, project scheduling |
+| Course Instructor | Dr. Jerry Mamo | [FILL IN: email] | Project oversight, evaluation, and grading |
 
 ---
 
