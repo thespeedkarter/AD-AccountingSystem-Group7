@@ -39,7 +39,7 @@ else
                 <tr>
                     <td>@l.CreatedAtUtc</td>
                     <td>@l.RecordId</td>
-                    <td>@l.Action</td>
+                    <td>@((AccountingSystem.Models.EventAction)l.Action)</td>
                     <td>@l.UserId</td>
                     <td><pre style="max-width:380px; white-space:pre-wrap;">@l.BeforeJson</pre></td>
                     <td><pre style="max-width:380px; white-space:pre-wrap;">@l.AfterJson</pre></td>

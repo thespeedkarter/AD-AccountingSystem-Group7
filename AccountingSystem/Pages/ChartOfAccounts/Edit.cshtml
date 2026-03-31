@@ -99,7 +99,7 @@
         <input class="form-control" asp-for="Input.Comment" />
     </div>
 
-    <div class="col-12 d-flex gap-2">
+    <div class="col-12 d-flex flex-wrap gap-2">
         <button class="btn btn-primary" type="submit" title="Save account changes">Save Changes</button>
 
         @if (Model.Input.IsActive)
@@ -113,6 +113,56 @@
             </button>
         }
 
+        <a class="btn btn-outline-secondary"
+           asp-page="/Ledger/Index"
+           asp-route-accountId="@Model.Input.ChartAccountId"
+           title="Open this account in the ledger">
+            View Ledger
+        </a>
+
+        <a class="btn btn-outline-dark"
+           asp-page="/ChartOfAccounts/Logs"
+           asp-route-RecordId="@Model.Input.ChartAccountId"
+           title="View event logs for this account">
+            Event Logs
+        </a>
+
         <a class="btn btn-outline-secondary" asp-page="./Index">Back</a>
+    </div>
+</form>
+
+<hr />
+
+<h4>Send Email</h4>
+<p class="text-muted">
+    Use this to notify a Manager, Accountant, or Administrator about this account.
+</p>
+
+<form method="post" class="row g-3">
+    <input type="hidden" asp-for="Input.ChartAccountId" />
+
+    <div class="col-md-4">
+        <label class="form-label">To</label>
+        <select class="form-select" asp-for="EmailToRole">
+            <option value="Administrator">Administrator</option>
+            <option value="Manager">Manager</option>
+            <option value="Accountant">Accountant</option>
+        </select>
+    </div>
+
+    <div class="col-md-8">
+        <label class="form-label">Subject</label>
+        <input class="form-control" asp-for="EmailSubject" />
+    </div>
+
+    <div class="col-12">
+        <label class="form-label">Message</label>
+        <textarea class="form-control" asp-for="EmailBody" rows="4"></textarea>
+    </div>
+
+    <div class="col-12">
+        <button class="btn btn-success" type="submit" asp-page-handler="SendEmail" title="Send email about this account">
+            Send Email
+        </button>
     </div>
 </form>

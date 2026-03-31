@@ -41,13 +41,8 @@ namespace AccountingSystem.Pages.Journal
 
         public async Task OnGetAsync()
         {
-            AccountOptions = await _db.ChartAccounts
-                .AsNoTracking()
-                .Where(a => a.IsActive)
-                .OrderBy(a => a.AccountNumber)
-                .ToListAsync();
+            await LoadAccountsAsync();
 
-            // Start with 2 blank lines
             if (Lines.Count == 0)
             {
                 Lines.Add(new JournalLineInput());
@@ -75,11 +70,29 @@ namespace AccountingSystem.Pages.Journal
             return Page();
         }
 
+        public async Task<IActionResult> OnPostResetAsync()
+        {
+            await LoadAccountsAsync();
+
+            Entry = new JournalEntry
+            {
+                EntryDate = DateTime.Today
+            };
+
+            Lines = new List<JournalLineInput>
+            {
+                new JournalLineInput(),
+                new JournalLineInput()
+            };
+
+            ModelState.Clear();
+            return Page();
+        }
+
         public async Task<IActionResult> OnPostSaveAsync()
         {
             await LoadAccountsAsync();
 
-            // Basic validation: at least one debit and one credit line with > 0
             var hasDebit = Lines.Any(l => l.Debit > 0);
             var hasCredit = Lines.Any(l => l.Credit > 0);
 
@@ -89,7 +102,6 @@ namespace AccountingSystem.Pages.Journal
                 return Page();
             }
 
-            // No line can have both debit and credit > 0
             foreach (var l in Lines)
             {
                 if (l.Debit > 0 && l.Credit > 0)
@@ -99,7 +111,6 @@ namespace AccountingSystem.Pages.Journal
                 }
             }
 
-            // Totals must balance
             var totalDebit = Lines.Sum(l => l.Debit);
             var totalCredit = Lines.Sum(l => l.Credit);
 
@@ -109,8 +120,11 @@ namespace AccountingSystem.Pages.Journal
                 return Page();
             }
 
-            // Validate account IDs exist and are active
-            var accountIds = Lines.Where(l => l.Debit > 0 || l.Credit > 0).Select(l => l.ChartAccountId).Distinct().ToList();
+            var nonZeroLines = Lines
+                .Where(l => l.Debit > 0 || l.Credit > 0)
+                .ToList();
+
+            var accountIds = nonZeroLines.Select(l => l.ChartAccountId).Distinct().ToList();
             var validCount = await _db.ChartAccounts.CountAsync(a => a.IsActive && accountIds.Contains(a.ChartAccountId));
             if (validCount != accountIds.Count)
             {
@@ -118,15 +132,9 @@ namespace AccountingSystem.Pages.Journal
                 return Page();
             }
 
-            // Save JournalEntry + Lines
             Entry.Status = JournalStatus.Pending;
             Entry.CreatedAtUtc = DateTime.UtcNow;
             Entry.CreatedByUserId = _userManager.GetUserId(User);
-
-            // Only keep non-zero lines
-            var nonZeroLines = Lines
-                .Where(l => l.Debit > 0 || l.Credit > 0)
-                .ToList();
 
             Entry.Lines = nonZeroLines.Select(l => new JournalLine
             {
@@ -137,6 +145,35 @@ namespace AccountingSystem.Pages.Journal
             }).ToList();
 
             _db.JournalEntries.Add(Entry);
+            await _db.SaveChangesAsync();
+
+            // Manager notification
+            var managers = await (
+                from u in _db.Users
+                join ur in _db.UserRoles on u.Id equals ur.UserId
+                join r in _db.Roles on ur.RoleId equals r.Id
+                where r.Name == "Manager" && u.Email != null
+                select new { u.Id, u.Email }
+            ).ToListAsync();
+
+            foreach (var m in managers)
+            {
+                _db.SentEmails.Add(new SentEmail
+                {
+                    ToEmail = m.Email!,
+                    ToUserId = m.Id,
+                    Subject = $"Journal Entry #{Entry.JournalEntryId} Submitted for Approval",
+                    BodyHtml =
+                        $@"<p>A journal entry has been submitted for approval.</p>
+                           <p><strong>Journal Entry ID:</strong> {Entry.JournalEntryId}<br/>
+                           <strong>Date:</strong> {Entry.EntryDate:d}<br/>
+                           <strong>Description:</strong> {Entry.Description}</p>",
+                    SentByUserId = _userManager.GetUserId(User),
+                    SentAtUtc = DateTime.UtcNow,
+                    Channel = "OutboxDb"
+                });
+            }
+
             await _db.SaveChangesAsync();
 
             return RedirectToPage("./Details", new { id = Entry.JournalEntryId });

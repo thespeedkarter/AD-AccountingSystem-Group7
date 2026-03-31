@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AccountingSystem.Pages.ChartOfAccounts
 {
-    [Authorize(Roles = "Administrator")]
+    [Authorize(Roles = "Administrator,Manager,Accountant")]
     public class EditModel : PageModel
     {
         private readonly ApplicationDbContext _db;
@@ -24,6 +24,15 @@ namespace AccountingSystem.Pages.ChartOfAccounts
         [BindProperty]
         public ChartAccount Input { get; set; } = new();
 
+        [BindProperty]
+        public string EmailToRole { get; set; } = "Manager";
+
+        [BindProperty]
+        public string? EmailSubject { get; set; }
+
+        [BindProperty]
+        public string? EmailBody { get; set; }
+
         [TempData] public string? StatusMessage { get; set; }
         [TempData] public string? ErrorMessage { get; set; }
 
@@ -36,6 +45,7 @@ namespace AccountingSystem.Pages.ChartOfAccounts
             return Page();
         }
 
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> OnPostAsync()
         {
             var existing = await _db.ChartAccounts.AsNoTracking()
@@ -75,6 +85,7 @@ namespace AccountingSystem.Pages.ChartOfAccounts
             return RedirectToPage("./Edit", new { id = Input.ChartAccountId });
         }
 
+        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> OnPostDeactivateAsync()
         {
             var acct = await _db.ChartAccounts.FirstOrDefaultAsync(a => a.ChartAccountId == Input.ChartAccountId);
@@ -106,6 +117,60 @@ namespace AccountingSystem.Pages.ChartOfAccounts
 
             StatusMessage = "Account deactivated.";
             return RedirectToPage("./Edit", new { id = acct.ChartAccountId });
+        }
+
+        public async Task<IActionResult> OnPostSendEmailAsync()
+        {
+            var acct = await _db.ChartAccounts.AsNoTracking().FirstOrDefaultAsync(a => a.ChartAccountId == Input.ChartAccountId);
+            if (acct == null) return NotFound();
+
+            if (string.IsNullOrWhiteSpace(EmailSubject) || string.IsNullOrWhiteSpace(EmailBody))
+            {
+                ErrorMessage = "Subject and message are required.";
+                return RedirectToPage("./Edit", new { id = Input.ChartAccountId });
+            }
+
+            var role = (EmailToRole ?? "").Trim();
+            if (role != "Administrator" && role != "Manager" && role != "Accountant")
+            {
+                ErrorMessage = "Invalid recipient role.";
+                return RedirectToPage("./Edit", new { id = Input.ChartAccountId });
+            }
+
+            var recipients = await (
+                from u in _db.Users
+                join ur in _db.UserRoles on u.Id equals ur.UserId
+                join r in _db.Roles on ur.RoleId equals r.Id
+                where r.Name == role
+                select new { u.Id, u.Email }
+            ).ToListAsync();
+
+            if (recipients.Count == 0)
+            {
+                ErrorMessage = $"No users found in role '{role}'.";
+                return RedirectToPage("./Edit", new { id = Input.ChartAccountId });
+            }
+
+            foreach (var rec in recipients.Where(x => !string.IsNullOrWhiteSpace(x.Email)))
+            {
+                _db.SentEmails.Add(new SentEmail
+                {
+                    ToEmail = rec.Email!,
+                    ToUserId = rec.Id,
+                    Subject = EmailSubject.Trim(),
+                    BodyHtml =
+                        $@"<p><strong>Account:</strong> {acct.AccountNumber} - {acct.AccountName}</p>
+                           <p>{System.Net.WebUtility.HtmlEncode(EmailBody).Replace("\n", "<br/>")}</p>",
+                    SentByUserId = _userManager.GetUserId(User),
+                    SentAtUtc = DateTime.UtcNow,
+                    Channel = "OutboxDb"
+                });
+            }
+
+            await _db.SaveChangesAsync();
+
+            StatusMessage = $"Email logged to {role} user(s).";
+            return RedirectToPage("./Edit", new { id = Input.ChartAccountId });
         }
     }
 }

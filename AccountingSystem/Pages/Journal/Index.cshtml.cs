@@ -125,7 +125,7 @@ namespace AccountingSystem.Pages.Journal
             je.Status = JournalStatus.Posted;
 
             // Create ledger rows
-            // Option B: ledger drives account balances
+            
             foreach (var line in je.Lines)
             {
                 // compute balance-after: last ledger balance for that account + (debit-credit)
@@ -153,7 +153,7 @@ namespace AccountingSystem.Pages.Journal
             }
 
             // Update ChartAccounts totals + balance using ledger
-            // (fast method: recompute for only accounts touched)
+            
             var touchedAccountIds = je.Lines.Select(l => l.ChartAccountId).Distinct().ToList();
             foreach (var acctId in touchedAccountIds)
             {
@@ -177,23 +177,22 @@ namespace AccountingSystem.Pages.Journal
                 }
             }
 
-            // Event log (only if it matches columns you used earlier)
-            if (await _db.Database.ExecuteSqlRawAsync(@"
-                IF OBJECT_ID('dbo.EventLogs','U') IS NOT NULL
-                BEGIN
-                    IF COL_LENGTH('dbo.EventLogs','EntityName') IS NOT NULL
-                       AND COL_LENGTH('dbo.EventLogs','EntityId') IS NOT NULL
-                       AND COL_LENGTH('dbo.EventLogs','OccurredAtUtc') IS NOT NULL
-                       AND COL_LENGTH('dbo.EventLogs','UserId') IS NOT NULL
-                    BEGIN
-                        INSERT dbo.EventLogs (EntityName, EntityId, OccurredAtUtc, UserId)
-                        VALUES ('JournalEntry', CAST({0} as nvarchar(50)), {1}, {2});
-                    END
-                END
-            ", je.JournalEntryId, nowUtc, postedByUserId) >= 0)
+            _db.EventLogs.Add(new EventLog
             {
-                // no-op
-            }
+                TableName = "JournalEntries",
+                RecordId = je.JournalEntryId,
+                Action = (int)EventAction.Post,
+                BeforeJson = null,
+                AfterJson = System.Text.Json.JsonSerializer.Serialize(new
+                {
+                    je.JournalEntryId,
+                    je.Status,
+                    je.PostedAtUtc,
+                    je.PostedByUserId
+                }),
+                UserId = postedByUserId,
+                CreatedAtUtc = DateTime.UtcNow
+            });
 
             await _db.SaveChangesAsync();
 

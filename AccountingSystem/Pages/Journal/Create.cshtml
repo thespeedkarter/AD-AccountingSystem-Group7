@@ -41,9 +41,7 @@
                             <option value="0">-- select --</option>
                             @foreach (var a in Model.AccountOptions)
                             {
-                                <option value="@a.ChartAccountId">
-                                    @a.AccountNumber - @a.AccountName
-                                </option>
+                                <option value="@a.ChartAccountId">@a.AccountNumber - @a.AccountName</option>
                             }
                         </select>
                     </td>
@@ -69,10 +67,17 @@
         </tbody>
     </table>
 
-    <button class="btn btn-outline-secondary" type="submit" asp-page-handler="AddLine">+ Add line</button>
+    <div class="d-flex gap-2">
+        <button class="btn btn-outline-secondary" type="submit" asp-page-handler="AddLine">+ Add line</button>
+        <button class="btn btn-outline-warning" type="submit" asp-page-handler="Reset">Reset Form</button>
+    </div>
 
     <hr />
 
     <button class="btn btn-primary" type="submit" asp-page-handler="Save">Submit for Approval</button>
     <a class="btn btn-outline-secondary" asp-page="./Index">Back</a>
+
+    <div class="text-muted small mt-2">
+        Journal entries may be reset before submission. Once submitted for approval, they cannot be deleted.
+    </div>
 </form>

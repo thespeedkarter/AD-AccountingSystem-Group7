@@ -51,6 +51,12 @@
                         <span class="badge bg-warning text-dark ms-2">Pending</span>
                     }
                 </div>
+                @if (Model.Entry.Status == JournalStatus.Pending || Model.Entry.Status == JournalStatus.Approved || Model.Entry.Status == JournalStatus.Rejected || Model.Entry.Status == JournalStatus.Posted)
+                {
+                    <div class="alert alert-secondary mt-3 mb-0">
+                        Submitted journal entries cannot be deleted.
+                    </div>
+                }
             </div>
 
             <div class="col-md-3">

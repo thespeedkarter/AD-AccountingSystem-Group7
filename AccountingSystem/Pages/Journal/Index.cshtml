@@ -7,21 +7,25 @@
 
 <h2>Journal</h2>
 
+<p class="text-muted small">
+    Journal entries can be reviewed and submitted for approval, but submitted entries cannot be deleted.
+</p>
+
 <div class="mb-3 d-flex gap-2">
     @if (User.IsInRole("Manager") || User.IsInRole("Accountant"))
     {
-        <a class="btn btn-primary" asp-page="./Create">+ Create Journal Entry</a>
+        <a class="btn btn-primary" asp-page="./Create" title="Create a new journal entry">+ Create Journal Entry</a>
     }
 
     @if (User.IsInRole("Manager"))
     {
-        <a class="btn btn-outline-secondary" asp-page="/Ledger/Index">View Ledger</a>
+        <a class="btn btn-outline-secondary" asp-page="/Ledger/Index" title="Open the ledger">View Ledger</a>
     }
 </div>
 
 <form method="get" class="row g-2 mb-3">
     <div class="col-md-3">
-        <select class="form-select" name="Status">
+        <select class="form-select" name="Status" title="Filter by journal status">
             <option value="">All Status</option>
             @foreach (var s in Enum.GetValues<JournalStatus>())
             {
@@ -32,19 +36,19 @@
     </div>
 
     <div class="col-md-2">
-        <input class="form-control" type="date" name="From" value="@(Model.From?.ToString("yyyy-MM-dd"))" />
+        <input class="form-control" type="date" name="From" value="@(Model.From?.ToString("yyyy-MM-dd"))" title="Filter from date" />
     </div>
 
     <div class="col-md-2">
-        <input class="form-control" type="date" name="To" value="@(Model.To?.ToString("yyyy-MM-dd"))" />
+        <input class="form-control" type="date" name="To" value="@(Model.To?.ToString("yyyy-MM-dd"))" title="Filter to date" />
     </div>
 
     <div class="col-md-3">
-        <input class="form-control" name="Search" value="@Model.Search" placeholder="Search by account name, amount, or date" />
+        <input class="form-control" name="Search" value="@Model.Search" placeholder="Search by account name, amount, or date" title="Search by account name, amount, or date" />
     </div>
 
     <div class="col-md-2">
-        <button class="btn btn-primary w-100" type="submit">Apply</button>
+        <button class="btn btn-primary w-100" type="submit" title="Apply search and filters">Apply</button>
     </div>
 </form>
 
@@ -95,18 +99,30 @@
                     }
                 </td>
                 <td class="text-end">
-                    <a class="btn btn-sm btn-outline-secondary" asp-page="./Details" asp-route-id="@e.JournalEntryId">View</a>
+                    <a class="btn btn-sm btn-outline-secondary"
+                       asp-page="./Details"
+                       asp-route-id="@e.JournalEntryId"
+                       title="View this journal entry">
+                        View
+                    </a>
 
                     @if (canApprove)
                     {
-                        <a class="btn btn-sm btn-outline-success ms-1" asp-page="./Approve" asp-route-id="@e.JournalEntryId">Approve/Reject</a>
+                        <a class="btn btn-sm btn-outline-success ms-1"
+                           asp-page="./Approve"
+                           asp-route-id="@e.JournalEntryId"
+                           title="Approve or reject this journal entry">
+                            Approve/Reject
+                        </a>
                     }
 
                     @if (canPost)
                     {
                         <form method="post" asp-page-handler="PostEntry" class="d-inline">
                             <input type="hidden" name="id" value="@e.JournalEntryId" />
-                            <button type="submit" class="btn btn-sm btn-success ms-1"
+                            <button type="submit"
+                                    class="btn btn-sm btn-success ms-1"
+                                    title="Post this journal entry to the ledger"
                                     onclick="return confirm('Post this entry? This will write to the ledger.');">
                                 Post
                             </button>
