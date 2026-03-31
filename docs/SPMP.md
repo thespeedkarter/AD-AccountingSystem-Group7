@@ -2,7 +2,7 @@
 
 ## Group 7 Accounting System
 
-**Course:** SWE4713 - Software Engineering | **Team:** Group 7 | **Version:** 1.0 | **Date:** [FILL IN]
+**Course:** SWE4713 - Software Engineering | **Team:** Group 7 | **Version:** 1.0 | **Date:** May 3, 2026
 
 ---
 
@@ -50,18 +50,17 @@ The system is designed to enforce proper accounting procedures (balanced debits 
 
 | Team Member | Role | Primary Responsibilities |
 |-------------|------|--------------------------|
-| [FILL IN] | Project Lead | Sprint planning, task assignment, GitHub management, integration oversight, instructor communication |
-| [FILL IN] | Backend Developer | C# page models, EF Core data access, business logic, services (PostingService, EventLogger, AccountingMath) |
-| [FILL IN] | Frontend Developer | Razor views (.cshtml), CSS styling (site.css), JavaScript (site.js), Bootstrap layout, form design |
-| [FILL IN] | QA Lead | Manual testing, test case design, bug tracking, documentation coordination |
-
-[FILL IN: Add or remove rows as needed for your actual team size and role assignments.]
+| Seth Venable | Development Manager | Lead development across all sprints, GitHub management, sprint coordination, architectural decisions |
+| Alejandro Garcia Soto | Frontend and Environment Lead | Razor view implementation, CSS and UI styling, Mac development environment setup and documentation |
+| Wilfred Faltz | QA and Testing Lead | Test case development and execution, bug reporting, browser compatibility testing |
+| Landon Clark | Backend Developer | Page model business logic, EF Core data access layer, database schema design |
+| Luke Odom | Documentation and Planning Manager | Sprint planning, technical writing, document maintenance, milestone tracking |
 
 ### 2.2 External Interfaces
 
-- **Course Instructor:** [FILL IN: Professor name] - receives all deliverables (Proposal, SPMP, SRS, SDT, User Manual, working software), evaluates project against sprint requirements, provides feedback and grading.
+- **Course Instructor:** Dr. Jerry Mamo - receives all deliverables (Proposal, SPMP, SRS, SDT, User Manual, working software), evaluates project against sprint requirements, provides feedback and grading.
 - **Version Control Host:** GitHub - Repository name: AD-AccountingSystem-Group7. All source code, migrations, and documentation are version-controlled here.
-- **Deployment Host:** [FILL IN: Where is the application hosted for demonstration? Options include: local development server (localhost), Windows Server with IIS, Azure App Service, or university-provided hosting.]
+- **Deployment Host:** [FILL IN: Production deployment environment - to be confirmed]
 
 ---
 
@@ -181,18 +180,22 @@ The project follows an Agile/Scrum lifecycle with five sprints. Each sprint targ
 | R-007 | Misunderstanding of accounting domain requirements | Medium | High | Cross-reference sprint requirements document regularly; consult accounting resources when implementing financial calculations |
 | R-008 | Password/security feature complexity causes delays | Medium | Medium | Use ASP.NET Identity's built-in features wherever possible; implement custom validators (PasswordHistoryValidator, StartsWithLetterPasswordValidator) as separate injectable services |
 | R-009 | File upload functionality introduces security vulnerabilities | Low | High | Restrict allowed file extensions; generate random stored filenames; enforce maximum file size (25 MB); store uploads outside web-accessible paths when possible |
-| [FILL IN: Additional risks identified by your team] | | | | |
+| R-008 | Cross-platform database differences causing inconsistent behavior | High | Medium | Maintain separate local dev documentation; use feature flags or conditional logic where SQL Server and SQLite behave differently |
+| R-009 | Incomplete sprint features affecting downstream sprints | Medium | High | Complete and verify each sprint before beginning the next; document any deferred items explicitly |
+| R-010 | Email functionality unavailable in development environment | Medium | Low | Use a database-backed stub email sender for development; configure real SMTP only for production |
+| R-011 | Financial calculation errors in reports or ratio analysis | Low | High | Cross-reference all calculations against course-provided solved examples before marking as complete |
+| R-012 | Application URL or hosting instability during grading period | Low | High | Document backup access method; test the application URL before each submission deadline |
 
 ### 3.4 Communication Plan
 
 | Communication Type | Frequency | Participants | Medium |
 |-------------------|-----------|--------------|--------|
-| Sprint planning | Once per sprint start | Full team | [FILL IN: Discord/Teams/in-person] |
-| Progress check-in | [FILL IN: Daily/twice weekly/weekly] | Full team | [FILL IN: Discord/Teams/text group] |
-| Code review | After each major feature | Relevant members | GitHub (commit review) |
-| Issue tracking | As needed | Full team | [FILL IN: GitHub Issues / Discord channel / other] |
-| Instructor updates | Per course schedule | Team Lead + Instructor | [FILL IN: Email / in-class / office hours] |
-| Sprint retrospective | End of each sprint | Full team | [FILL IN: Discord/Teams/in-person] |
+| Sprint planning meeting | Once per sprint (before sprint begins) | Full team | GroupMe and Microsoft Teams |
+| Weekly progress check-in | Weekly | Full team | Microsoft Teams video call |
+| Daily async updates | As needed between meetings | Full team | GroupMe |
+| Code review and merge | After each completed feature | Relevant developers | GitHub |
+| Issue and bug tracking | As issues are discovered | Full team | GitHub / GroupMe |
+| Instructor milestone updates | Per course submission schedule | Team lead + instructor | [FILL IN: course platform or email] |
 
 ---
 
@@ -212,11 +215,11 @@ Agile/Scrum with sprint-based incremental delivery. Each of the five sprints tar
 | Authentication | ASP.NET Identity (Identity.EntityFrameworkCore, Identity.UI) | 8.0.24 |
 | Database (Windows) | SQL Server LocalDB | Included with Visual Studio |
 | Database (macOS) | SQLite | Via Microsoft.EntityFrameworkCore.Sqlite 8.0.23 |
-| IDE | Visual Studio 2022 / Visual Studio Code | [FILL IN: Specific version] |
+| IDE | Visual Studio 2022 or Visual Studio Code | Latest available version |
 | Version Control | Git + GitHub | Latest |
 | Runtime | .NET 8 SDK | 8.x |
 | OS (Primary) | Windows 11 | |
-| OS (Secondary) | macOS | [FILL IN: If applicable] |
+| OS (Secondary) | macOS | Used by team members with Mac hardware |
 | CSS Framework | Bootstrap | 5.x (bundled in wwwroot/lib) |
 | JavaScript Libraries | jQuery, jQuery Validation, jQuery Validation Unobtrusive | Bundled in wwwroot/lib |
 

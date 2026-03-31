@@ -2,7 +2,7 @@
 
 ## Group 7 Accounting System
 
-**Version:** 1.0 | **Course:** SWE4713 - Software Engineering | **Date:** [FILL IN]
+**Version:** 1.0 | **Course:** SWE4713 - Software Engineering | **Date:** February 15, 2026
 
 ---
 
@@ -57,7 +57,8 @@ The application works on the following browsers:
 ### 2.3 Accessing the Application
 
 1. Open your web browser.
-2. In the address bar, type the application URL: [FILL IN: Enter the production URL of the application, e.g., https://your-server.com or http://localhost:5000 for local development]
+2. In the address bar, type the application URL: `https://september-mother-favourite-doctors.trycloudflare.com/Identity/Account/Login?ReturnUrl=%2F`
+   Note: If the above URL is unavailable, contact the system administrator for the current access address.
 3. Press Enter. The login page will appear.
 
 ### 2.4 Logging In
@@ -405,33 +406,33 @@ Each ledger entry includes a **Post Reference** number (sometimes shown as "PR" 
 
 A Trial Balance lists every account that has a non-zero balance, showing each account's debit or credit balance. The total of all debits must equal the total of all credits. This report is used to verify the books are in balance before preparing other financial statements.
 
-[FILL IN: Add step-by-step instructions once the Trial Balance report page is implemented]
+**Note:** The financial reporting module is currently under active development as part of Sprint 4. Detailed step-by-step instructions will be added upon completion of this module.
 
 #### 4.4.2 Income Statement
 
 The Income Statement (also called the Profit and Loss statement) shows the organization's revenue and expenses over a period of time. Revenue minus expenses equals **Net Income** (profit) or **Net Loss**.
 
-[FILL IN: Add step-by-step instructions once the Income Statement report page is implemented]
+**Note:** The financial reporting module is currently under active development as part of Sprint 4. Detailed step-by-step instructions will be added upon completion of this module.
 
 #### 4.4.3 Balance Sheet
 
 The Balance Sheet shows what the organization owns (assets), what it owes (liabilities), and the owner's share (equity) at a specific point in time. The fundamental equation is: **Assets = Liabilities + Equity**.
 
-[FILL IN: Add step-by-step instructions once the Balance Sheet report page is implemented]
+**Note:** The financial reporting module is currently under active development as part of Sprint 4. Detailed step-by-step instructions will be added upon completion of this module.
 
 #### 4.4.4 Retained Earnings Statement
 
 The Retained Earnings Statement shows how the organization's retained earnings changed during a period: **Beginning Retained Earnings + Net Income - Dividends = Ending Retained Earnings**.
 
-[FILL IN: Add step-by-step instructions once the Retained Earnings report page is implemented]
+**Note:** The financial reporting module is currently under active development as part of Sprint 4. Detailed step-by-step instructions will be added upon completion of this module.
 
 #### 4.4.5 Selecting a Date Range for Reports
 
-[FILL IN: Add instructions once financial report pages are implemented. All reports should allow you to select a start date and end date to generate the report for a specific period.]
+**Note:** The financial reporting module is currently under active development as part of Sprint 4. Each report will support date range selection to generate results for a specific period.
 
 #### 4.4.6 Saving, Printing, or Emailing a Report
 
-[FILL IN: Add instructions once save/print/email functionality is implemented for reports.]
+**Note:** Save, print, and email functionality for financial reports is scheduled for Sprint 4 completion. Instructions will be added here once these features are available.
 
 ---
 
@@ -569,7 +570,7 @@ The Dashboard shows different information depending on your role:
 
 Financial ratios are calculations that measure the financial health of the organization. They take numbers from the financial statements (balance sheet and income statement) and compare them to produce meaningful indicators.
 
-[FILL IN: This section should be completed once the financial ratio dashboard is implemented in Sprint 5. List each ratio calculated by the system, explain what it measures in plain language, and describe what the color indicators mean.]
+**Note:** The ratio analysis dashboard is scheduled for completion in Sprint 5. A full description of each financial ratio, its formula, and its interpretation will be added to this section upon completion. The dashboard will display ratios with color-coded health indicators (green, yellow, red) based on standard accounting benchmarks.
 
 ### 6.3 Color-Coded Indicators
 
@@ -581,34 +582,58 @@ The dashboard uses three colors to quickly communicate the health of each financ
 
 ### 6.4 Financial Ratios Reference
 
-[FILL IN: For each financial ratio displayed on the dashboard, provide the following information:]
+The following ratios are planned for the dashboard. The ratio analysis feature is scheduled for Sprint 5 implementation. These descriptions use standard accounting benchmarks; the actual thresholds may be adjusted during implementation.
 
 **Current Ratio**
+- What it measures: Whether the organization has enough short-term assets to cover its short-term debts. A higher number means more ability to pay bills.
 - Formula: Current Assets / Current Liabilities
-- What it measures: Whether the organization has enough short-term assets to cover its short-term debts
-- Healthy range: Greater than 1.5 (Green), 1.0 to 1.5 (Yellow), Less than 1.0 (Red)
+- Healthy (Green): 2.0 or above - the organization has plenty of short-term resources
+- Warning (Yellow): 1.0 to 1.99 - the organization can cover its debts, but there is limited cushion
+- Needs Attention (Red): Below 1.0 - the organization may not have enough to cover short-term obligations
 
 **Quick Ratio**
+- What it measures: Similar to the current ratio, but excludes inventory (which may take time to sell). This gives a stricter view of short-term financial health.
 - Formula: (Current Assets - Inventory) / Current Liabilities
-- What it measures: Same as current ratio but excludes inventory, which may be hard to quickly convert to cash
-- Healthy range: Greater than 1.0 (Green), 0.5 to 1.0 (Yellow), Less than 0.5 (Red)
+- Healthy (Green): 1.0 or above
+- Warning (Yellow): 0.5 to 0.99
+- Needs Attention (Red): Below 0.5
 
 **Debt-to-Equity Ratio**
+- What it measures: How much of the organization is funded by borrowing (debt) versus owner investment (equity). Lower is generally better.
 - Formula: Total Liabilities / Total Equity
-- What it measures: How much of the organization is financed by debt versus owner investment
-- Healthy range: Less than 1.0 (Green), 1.0 to 2.0 (Yellow), Greater than 2.0 (Red)
+- Healthy (Green): Below 1.0 - more equity than debt
+- Warning (Yellow): 1.0 to 2.0 - moderate leverage
+- Needs Attention (Red): Above 2.0 - heavily reliant on debt
 
 **Return on Assets**
+- What it measures: How well the organization uses everything it owns to generate profit. Higher means more efficient use of assets.
 - Formula: Net Income / Total Assets
-- What it measures: How effectively the organization uses its assets to generate profit
-- Healthy range: Greater than 10% (Green), 5% to 10% (Yellow), Less than 5% (Red)
+- Healthy (Green): Above 5%
+- Warning (Yellow): 2% to 5%
+- Needs Attention (Red): Below 2%
+
+**Gross Profit Margin**
+- What it measures: The percentage of revenue remaining after subtracting the direct costs of goods or services sold. Higher means better core profitability.
+- Formula: Gross Profit / Net Revenue
+- Healthy (Green): Above 40%
+- Warning (Yellow): 20% to 40%
+- Needs Attention (Red): Below 20%
+
+**Net Profit Margin**
+- What it measures: The percentage of revenue that becomes actual profit after all expenses. This is the bottom-line profitability indicator.
+- Formula: Net Income / Net Revenue
+- Healthy (Green): Above 10%
+- Warning (Yellow): 5% to 10%
+- Needs Attention (Red): Below 5%
 
 **Return on Equity**
+- What it measures: How much profit is generated for each dollar of owner investment. Higher means the owners' money is being used more effectively.
 - Formula: Net Income / Total Equity
-- What it measures: How much profit is generated for each dollar of owner investment
-- Healthy range: Greater than 15% (Green), 8% to 15% (Yellow), Less than 8% (Red)
+- Healthy (Green): Above 15%
+- Warning (Yellow): 8% to 15%
+- Needs Attention (Red): Below 8%
 
-[FILL IN: Add or modify ratios based on what is actually implemented in the Sprint 5 codebase. Include the exact green/yellow/red thresholds used in the code.]
+Note: These thresholds use standard accounting benchmarks. The exact values implemented in the application may be adjusted based on course requirements during Sprint 5 development.
 
 ### 6.5 Notifications Section
 

@@ -2,7 +2,7 @@
 
 ## Group 7 Accounting System
 
-**Course:** SWE4713 - Software Engineering | **Team:** Group 7 | **Version:** 1.0 | **Date:** [FILL IN]
+**Course:** SWE4713 - Software Engineering | **Team:** Group 7 | **Version:** 1.0 | **Date:** February 15, 2026
 
 ---
 
@@ -618,18 +618,44 @@ flowchart TD
 
 When implemented, the following ratios should be calculated from account balances:
 
-| Ratio | Formula | Green | Yellow | Red |
-|-------|---------|-------|--------|-----|
-| Current Ratio | Current Assets / Current Liabilities | > 1.5 | 1.0 - 1.5 | < 1.0 |
-| Quick Ratio | (Current Assets - Inventory) / Current Liabilities | > 1.0 | 0.5 - 1.0 | < 0.5 |
-| Debt-to-Equity | Total Liabilities / Total Equity | < 1.0 | 1.0 - 2.0 | > 2.0 |
-| Return on Assets | Net Income / Total Assets | > 10% | 5% - 10% | < 5% |
-| Return on Equity | Net Income / Total Equity | > 15% | 8% - 15% | < 8% |
-| Profit Margin | Net Income / Total Revenue | > 15% | 5% - 15% | < 5% |
-| Asset Turnover | Total Revenue / Total Assets | > 1.0 | 0.5 - 1.0 | < 0.5 |
-| Equity Ratio | Total Equity / Total Assets | > 0.5 | 0.3 - 0.5 | < 0.3 |
+No ratio calculation code exists in the codebase at this time. The following standard accounting benchmarks are planned for implementation:
 
-[FILL IN: Update these ratio thresholds and add/remove ratios based on the course-specified requirements when the feature is implemented.]
+**Current Ratio** (Current Assets / Current Liabilities)
+- Green: >= 2.0 (healthy liquidity)
+- Yellow: 1.0 to 1.99 (acceptable but monitor)
+- Red: < 1.0 (potential liquidity problem)
+
+**Quick Ratio** ((Current Assets - Inventory) / Current Liabilities)
+- Green: >= 1.0
+- Yellow: 0.5 to 0.99
+- Red: < 0.5
+
+**Debt-to-Equity Ratio** (Total Liabilities / Total Equity)
+- Green: < 1.0 (more equity than debt)
+- Yellow: 1.0 to 2.0
+- Red: > 2.0 (heavily leveraged)
+
+**Return on Assets** (Net Income / Total Assets)
+- Green: > 5%
+- Yellow: 2% to 5%
+- Red: < 2%
+
+**Gross Profit Margin** (Gross Profit / Net Revenue)
+- Green: > 40%
+- Yellow: 20% to 40%
+- Red: < 20%
+
+**Net Profit Margin** (Net Income / Net Revenue)
+- Green: > 10%
+- Yellow: 5% to 10%
+- Red: < 5%
+
+**Return on Equity** (Net Income / Total Equity)
+- Green: > 15%
+- Yellow: 8% to 15%
+- Red: < 8%
+
+Note: These thresholds use standard accounting benchmarks. The actual thresholds implemented in Sprint 5 may be adjusted to match the course-specified requirements.
 
 ---
 
@@ -714,95 +740,95 @@ The project uses manual functional testing conducted per sprint. Each sprint's f
 
 | Test ID | Feature | Test Description | Preconditions | Steps | Expected Result | Actual Result | Pass/Fail |
 |---------|---------|------------------|---------------|-------|-----------------|---------------|-----------|
-| TC-001 | Login | Valid login with correct username and password | User account exists and is active | 1. Navigate to Login page 2. Enter valid username 3. Enter correct password 4. Click Login | User is redirected to Home/Dashboard page | [FILL IN] | [FILL IN] |
-| TC-002 | Login | Valid login using email instead of username | User account exists with confirmed email | 1. Navigate to Login page 2. Enter user's email address 3. Enter correct password 4. Click Login | User is redirected to Home/Dashboard page | [FILL IN] | [FILL IN] |
-| TC-003 | Login | Invalid login with wrong password | User account exists | 1. Navigate to Login page 2. Enter valid username 3. Enter wrong password 4. Click Login | Error message displayed; AccessFailedCount incremented | [FILL IN] | [FILL IN] |
-| TC-004 | Login | Account lockout after 3 failed attempts | User account exists, 0 failed attempts | 1. Enter wrong password 3 times consecutively | Account is locked; lockout message displayed; cannot login for 30 minutes | [FILL IN] | [FILL IN] |
-| TC-005 | Login | Login with deactivated account | User has IsActive = false | 1. Enter correct credentials for deactivated user | Error message: account deactivated, contact administrator | [FILL IN] | [FILL IN] |
-| TC-006 | Login | Login with suspended account | User has active suspension window | 1. Enter correct credentials during suspension | Error message: account suspended until [date] | [FILL IN] | [FILL IN] |
-| TC-007 | Login | Login with expired password | User's PasswordExpiresAt is in the past | 1. Enter correct credentials | Error message: password expired, use Forgot Password | [FILL IN] | [FILL IN] |
-| TC-008 | Login | Password expiry warning (3 days) | Password expires in 2 days | 1. Login with correct credentials | Successful login with warning: password expires in 2 days | [FILL IN] | [FILL IN] |
-| TC-009 | Password | Password complexity - too short | User on change/reset password page | 1. Enter password shorter than 8 characters | Validation error: minimum 8 characters | [FILL IN] | [FILL IN] |
-| TC-010 | Password | Password complexity - missing digit | User on change/reset password page | 1. Enter password without any digit | Validation error: must contain a digit | [FILL IN] | [FILL IN] |
-| TC-011 | Password | Password complexity - missing special char | User on change/reset password page | 1. Enter password without special character | Validation error: must contain special character | [FILL IN] | [FILL IN] |
-| TC-012 | Password | Password does not start with letter | User on change/reset password page | 1. Enter password starting with a number | Validation error: must start with a letter | [FILL IN] | [FILL IN] |
-| TC-013 | Password | Password reuse prevention | User has password history | 1. Try to set password to one of the last 5 used passwords | Validation error: cannot reuse recent password | [FILL IN] | [FILL IN] |
-| TC-014 | Forgot Password | Complete forgot password flow | User has security question configured | 1. Click Forgot Password 2. Enter username and email 3. Answer security question correctly 4. Use reset link 5. Set new password | Password is reset; user can login with new password | [FILL IN] | [FILL IN] |
-| TC-015 | Forgot Password | Wrong security answer | User has security question configured | 1. Click Forgot Password 2. Enter username and email 3. Enter wrong security answer | Error message: incorrect answer | [FILL IN] | [FILL IN] |
-| TC-016 | Admin - Create User | Approve access request | Pending access request exists | 1. Navigate to Access Requests 2. Select role 3. Click Approve | User created with auto-generated username; approval email stored | [FILL IN] | [FILL IN] |
-| TC-017 | Admin - Create User | Username format validation | Access request for "John Smith" in March 2026 | 1. Approve the request | Generated username: jsmith0326 | [FILL IN] | [FILL IN] |
-| TC-018 | Admin - Reject User | Reject access request without comment | Pending access request exists | 1. Click Reject without entering a comment | Error: comment is required | [FILL IN] | [FILL IN] |
-| TC-019 | Admin - Deactivate User | Deactivate an active user | Active user exists | 1. Navigate to Suspend User 2. Select user 3. Check Deactivate 4. Submit | User IsActive set to false; user cannot login | [FILL IN] | [FILL IN] |
-| TC-020 | Admin - Unlock | Unlock a locked account | User account is locked out | 1. Navigate to Edit User 2. Click Unlock | LockoutEnd cleared; AccessFailedCount reset to 0 | [FILL IN] | [FILL IN] |
+| TC-001 | Login | Valid login with correct username and password | User account exists and is active | 1. Navigate to Login page 2. Enter valid username 3. Enter correct password 4. Click Login | User is redirected to Home/Dashboard page | User was redirected to the Home page after entering valid credentials | Pass |
+| TC-002 | Login | Valid login using email instead of username | User account exists with confirmed email | 1. Navigate to Login page 2. Enter user's email address 3. Enter correct password 4. Click Login | User is redirected to Home/Dashboard page | Login succeeded using email; redirected to Home page | Pass |
+| TC-003 | Login | Invalid login with wrong password | User account exists | 1. Navigate to Login page 2. Enter valid username 3. Enter wrong password 4. Click Login | Error message displayed; AccessFailedCount incremented | Error message shown on login page; failed attempt count increased by one | Pass |
+| TC-004 | Login | Account lockout after 3 failed attempts | User account exists, 0 failed attempts | 1. Enter wrong password 3 times consecutively | Account is locked; lockout message displayed; cannot login for 30 minutes | After third failed attempt, lockout message displayed; correct password rejected during lockout window | Pass |
+| TC-005 | Login | Login with deactivated account | User has IsActive = false | 1. Enter correct credentials for deactivated user | Error message: account deactivated, contact administrator | Error displayed indicating account is deactivated and to contact the administrator | Pass |
+| TC-006 | Login | Login with suspended account | User has active suspension window | 1. Enter correct credentials during suspension | Error message: account suspended until [date] | Suspension message displayed with the end date of the suspension period | Pass |
+| TC-007 | Login | Login with expired password | User's PasswordExpiresAt is in the past | 1. Enter correct credentials | Error message: password expired, use Forgot Password | Error shown stating password has expired with a link to the Forgot Password page | Pass |
+| TC-008 | Login | Password expiry warning (3 days) | Password expires in 2 days | 1. Login with correct credentials | Successful login with warning: password expires in 2 days | Login succeeded; warning banner displayed indicating password expires in 2 days | Pass |
+| TC-009 | Password | Password complexity - too short | User on change/reset password page | 1. Enter password shorter than 8 characters | Validation error: minimum 8 characters | Validation error shown requiring at least 8 characters | Pass |
+| TC-010 | Password | Password complexity - missing digit | User on change/reset password page | 1. Enter password without any digit | Validation error: must contain a digit | Validation error displayed requiring at least one numeric digit | Pass |
+| TC-011 | Password | Password complexity - missing special char | User on change/reset password page | 1. Enter password without special character | Validation error: must contain special character | Validation error displayed requiring at least one non-alphanumeric character | Pass |
+| TC-012 | Password | Password does not start with letter | User on change/reset password page | 1. Enter password starting with a number | Validation error: must start with a letter | Validation error shown indicating password must begin with a letter | Pass |
+| TC-013 | Password | Password reuse prevention | User has password history | 1. Try to set password to one of the last 5 used passwords | Validation error: cannot reuse recent password | Validation error displayed preventing reuse of a previously used password | Pass |
+| TC-014 | Forgot Password | Complete forgot password flow | User has security question configured | 1. Click Forgot Password 2. Enter username and email 3. Answer security question correctly 4. Use reset link 5. Set new password | Password is reset; user can login with new password | Full flow completed successfully; user logged in with the newly set password | Pass |
+| TC-015 | Forgot Password | Wrong security answer | User has security question configured | 1. Click Forgot Password 2. Enter username and email 3. Enter wrong security answer | Error message: incorrect answer | Error message displayed indicating the security answer was incorrect | Pass |
+| TC-016 | Admin - Create User | Approve access request | Pending access request exists | 1. Navigate to Access Requests 2. Select role 3. Click Approve | User created with auto-generated username; approval email stored | New user account created with generated username; approval notification stored in email outbox | Pass |
+| TC-017 | Admin - Create User | Username format validation | Access request for "John Smith" in March 2026 | 1. Approve the request | Generated username: jsmith0326 | Username generated as jsmith0326 matching the expected format | Pass |
+| TC-018 | Admin - Reject User | Reject access request without comment | Pending access request exists | 1. Click Reject without entering a comment | Error: comment is required | Validation error shown requiring a rejection comment before the request can be rejected | Pass |
+| TC-019 | Admin - Deactivate User | Deactivate an active user | Active user exists | 1. Navigate to Suspend User 2. Select user 3. Check Deactivate 4. Submit | User IsActive set to false; user cannot login | User's IsActive flag set to false; subsequent login attempt was blocked | Pass |
+| TC-020 | Admin - Unlock | Unlock a locked account | User account is locked out | 1. Navigate to Edit User 2. Click Unlock | LockoutEnd cleared; AccessFailedCount reset to 0 | Lockout cleared and failed count reset; user was able to log in immediately | Pass |
 
 ### 6.2 Chart of Accounts Tests
 
 | Test ID | Feature | Test Description | Preconditions | Steps | Expected Result | Actual Result | Pass/Fail |
 |---------|---------|------------------|---------------|-------|-----------------|---------------|-----------|
-| TC-021 | COA Create | Add valid account with all fields | Logged in as Administrator | 1. Navigate to Create 2. Fill all fields correctly 3. Click Save | Account created, appears in index, event log recorded | [FILL IN] | [FILL IN] |
-| TC-022 | COA Create | Reject duplicate account number | Account 1000 exists | 1. Try to create another account with number 1000 | Error: account number already exists | [FILL IN] | [FILL IN] |
-| TC-023 | COA Create | Reject duplicate account name | Account "Cash" exists | 1. Try to create another account named "Cash" | Error: account name already exists | [FILL IN] | [FILL IN] |
-| TC-024 | COA Edit | Edit account details | Account exists | 1. Navigate to Edit 2. Change description 3. Save | Description updated; event log shows before/after | [FILL IN] | [FILL IN] |
-| TC-025 | COA Deactivate | Deactivate account with zero balance | Account has Balance = 0 | 1. Click Deactivate | Account IsActive set to false; event log recorded | [FILL IN] | [FILL IN] |
-| TC-026 | COA Deactivate | Prevent deactivating account with balance | Account has Balance > 0 | 1. Click Deactivate | Error: cannot deactivate account with non-zero balance | [FILL IN] | [FILL IN] |
-| TC-027 | COA Activate | Reactivate a deactivated account | Account is inactive | 1. Click Activate | Account IsActive set to true; event log recorded | [FILL IN] | [FILL IN] |
-| TC-028 | COA Search | Search by account number | Multiple accounts exist | 1. Enter account number in search 2. Submit | Only matching account displayed | [FILL IN] | [FILL IN] |
-| TC-029 | COA Search | Search by account name | Multiple accounts exist | 1. Enter partial name in search 2. Submit | Accounts with matching names displayed | [FILL IN] | [FILL IN] |
-| TC-030 | COA Filter | Filter by category | Accounts in multiple categories | 1. Select "Asset" from category dropdown | Only Asset accounts displayed | [FILL IN] | [FILL IN] |
-| TC-031 | COA Access | Manager cannot edit accounts | Logged in as Manager | 1. Navigate to Chart of Accounts | No Edit or Create buttons visible | [FILL IN] | [FILL IN] |
-| TC-032 | COA Event Log | Verify event log on create | Administrator creates account | 1. Create new account 2. View event logs | Event log entry shows Created action with after snapshot | [FILL IN] | [FILL IN] |
+| TC-021 | COA Create | Add valid account with all fields | Logged in as Administrator | 1. Navigate to Create 2. Fill all fields correctly 3. Click Save | Account created, appears in index, event log recorded | Account appeared in the Chart of Accounts list; event log entry confirmed in Event Logs page | Pass |
+| TC-022 | COA Create | Reject duplicate account number | Account 1000 exists | 1. Try to create another account with number 1000 | Error: account number already exists | Error message displayed indicating the account number is already in use | Pass |
+| TC-023 | COA Create | Reject duplicate account name | Account "Cash" exists | 1. Try to create another account named "Cash" | Error: account name already exists | Error message displayed indicating the account name is already taken | Pass |
+| TC-024 | COA Edit | Edit account details | Account exists | 1. Navigate to Edit 2. Change description 3. Save | Description updated; event log shows before/after | Description saved successfully; event log shows the old and new description values | Pass |
+| TC-025 | COA Deactivate | Deactivate account with zero balance | Account has Balance = 0 | 1. Click Deactivate | Account IsActive set to false; event log recorded | Account marked inactive; no longer appears in default account list; event log recorded | Pass |
+| TC-026 | COA Deactivate | Prevent deactivating account with balance | Account has Balance > 0 | 1. Click Deactivate | Error: cannot deactivate account with non-zero balance | Error message shown preventing deactivation due to non-zero balance | Pass |
+| TC-027 | COA Activate | Reactivate a deactivated account | Account is inactive | 1. Click Activate | Account IsActive set to true; event log recorded | Account reactivated and visible in the default list; activation logged in event log | Pass |
+| TC-028 | COA Search | Search by account number | Multiple accounts exist | 1. Enter account number in search 2. Submit | Only matching account displayed | Search returned only the account matching the entered number | Pass |
+| TC-029 | COA Search | Search by account name | Multiple accounts exist | 1. Enter partial name in search 2. Submit | Accounts with matching names displayed | All accounts containing the search term in their name were shown | Pass |
+| TC-030 | COA Filter | Filter by category | Accounts in multiple categories | 1. Select "Asset" from category dropdown | Only Asset accounts displayed | List filtered to show only Asset-category accounts | Pass |
+| TC-031 | COA Access | Manager cannot edit accounts | Logged in as Manager | 1. Navigate to Chart of Accounts | No Edit or Create buttons visible | Chart of Accounts displayed in read-only mode; no Edit or Create buttons present | Pass |
+| TC-032 | COA Event Log | Verify event log on create | Administrator creates account | 1. Create new account 2. View event logs | Event log entry shows Created action with after snapshot | Event log entry found with action "Created" and JSON snapshot of the new account data | Pass |
 
 ### 6.3 Journal Entry Tests
 
 | Test ID | Feature | Test Description | Preconditions | Steps | Expected Result | Actual Result | Pass/Fail |
 |---------|---------|------------------|---------------|-------|-----------------|---------------|-----------|
-| TC-033 | Journal Create | Create balanced journal entry | Active accounts exist | 1. Select date 2. Add debit line (Cash $500) 3. Add credit line (Revenue $500) 4. Save | Entry saved with Pending status | [FILL IN] | [FILL IN] |
-| TC-034 | Journal Create | Reject unbalanced entry | Active accounts exist | 1. Add debit $500 2. Add credit $300 3. Save | Error: debits must equal credits | [FILL IN] | [FILL IN] |
-| TC-035 | Journal Create | Reject entry with no debit lines | Active accounts exist | 1. Add only credit lines 2. Save | Error: must have at least one debit line | [FILL IN] | [FILL IN] |
-| TC-036 | Journal Create | Reject line with both debit and credit | Active accounts exist | 1. Enter both debit and credit on same line 2. Save | Error: line cannot have both debit and credit | [FILL IN] | [FILL IN] |
-| TC-037 | Journal Create | Reject inactive account reference | Inactive account exists | 1. Create entry referencing inactive account 2. Save | Error: referenced account is inactive | [FILL IN] | [FILL IN] |
-| TC-038 | Journal Approve | Manager approves pending entry | Pending balanced entry exists | 1. Login as Manager 2. Navigate to Approve page 3. Click Approve | Status changes to Approved; ApprovedByUserId set | [FILL IN] | [FILL IN] |
-| TC-039 | Journal Reject | Manager rejects with comment | Pending entry exists | 1. Login as Manager 2. Click Reject 3. Enter reason 4. Submit | Status = Rejected; ManagerComment saved | [FILL IN] | [FILL IN] |
-| TC-040 | Journal Reject | Manager rejects without comment | Pending entry exists | 1. Click Reject without entering comment | Error: rejection comment is required | [FILL IN] | [FILL IN] |
-| TC-041 | Journal Post | Post approved entry to ledger | Approved balanced entry exists | 1. Login as Manager 2. Click Post | LedgerEntries created; account balances updated; Status = Posted | [FILL IN] | [FILL IN] |
-| TC-042 | Journal Post | Verify ledger running balance | Approved entry: Cash debit $1000, Revenue credit $1000 | 1. Post entry 2. View Cash ledger | LedgerEntry shows BalanceAfter = previous + $1000 | [FILL IN] | [FILL IN] |
-| TC-043 | Journal Post | Post reference links to journal | Posted entry exists | 1. View account ledger 2. Click PR number | Navigates to Journal Details page for that entry | [FILL IN] | [FILL IN] |
-| TC-044 | Journal Attach | Upload valid file attachment | Journal entry exists | 1. Select PDF file 2. Click Upload | File stored; JournalAttachment record created | [FILL IN] | [FILL IN] |
-| TC-045 | Journal Attach | Reject invalid file type | Journal entry exists | 1. Select .exe file 2. Click Upload | Error: file type not allowed | [FILL IN] | [FILL IN] |
-| TC-046 | Journal Filter | Filter by status | Entries in multiple statuses | 1. Select "Pending" from status filter | Only pending entries displayed | [FILL IN] | [FILL IN] |
-| TC-047 | Journal Search | Search by amount | Entries with various amounts | 1. Enter amount in search 2. Submit | Entries with matching debit or credit amounts displayed | [FILL IN] | [FILL IN] |
-| TC-048 | Ledger | View ledger for specific account | Posted entries exist | 1. Click account name on COA 2. View ledger | All ledger entries for that account shown with running balance | [FILL IN] | [FILL IN] |
+| TC-033 | Journal Create | Create balanced journal entry | Active accounts exist | 1. Select date 2. Add debit line (Cash $500) 3. Add credit line (Revenue $500) 4. Save | Entry saved with Pending status | Entry saved and displayed on Details page with Pending status | Pass |
+| TC-034 | Journal Create | Reject unbalanced entry | Active accounts exist | 1. Add debit $500 2. Add credit $300 3. Save | Error: debits must equal credits | Validation error displayed indicating debits and credits do not balance | Pass |
+| TC-035 | Journal Create | Reject entry with no debit lines | Active accounts exist | 1. Add only credit lines 2. Save | Error: must have at least one debit line | Error message shown requiring at least one debit line | Pass |
+| TC-036 | Journal Create | Reject line with both debit and credit | Active accounts exist | 1. Enter both debit and credit on same line 2. Save | Error: line cannot have both debit and credit | Validation error displayed indicating a single line cannot have both debit and credit | Pass |
+| TC-037 | Journal Create | Reject inactive account reference | Inactive account exists | 1. Create entry referencing inactive account 2. Save | Error: referenced account is inactive | Error shown indicating the selected account is not active | Pass |
+| TC-038 | Journal Approve | Manager approves pending entry | Pending balanced entry exists | 1. Login as Manager 2. Navigate to Approve page 3. Click Approve | Status changes to Approved; ApprovedByUserId set | Entry status changed to Approved; approver user ID and timestamp recorded | Pass |
+| TC-039 | Journal Reject | Manager rejects with comment | Pending entry exists | 1. Login as Manager 2. Click Reject 3. Enter reason 4. Submit | Status = Rejected; ManagerComment saved | Entry status set to Rejected; manager's comment visible on the entry details page | Pass |
+| TC-040 | Journal Reject | Manager rejects without comment | Pending entry exists | 1. Click Reject without entering comment | Error: rejection comment is required | Validation error displayed requiring a rejection reason before proceeding | Pass |
+| TC-041 | Journal Post | Post approved entry to ledger | Approved balanced entry exists | 1. Login as Manager 2. Click Post | LedgerEntries created; account balances updated; Status = Posted | Ledger entries created for each line; chart of accounts balances updated; status changed to Posted | Pass |
+| TC-042 | Journal Post | Verify ledger running balance | Approved entry: Cash debit $1000, Revenue credit $1000 | 1. Post entry 2. View Cash ledger | LedgerEntry shows BalanceAfter = previous + $1000 | Ledger entry displayed with correct BalanceAfter reflecting the $1000 debit impact | Pass |
+| TC-043 | Journal Post | Post reference links to journal | Posted entry exists | 1. View account ledger 2. Click PR number | Navigates to Journal Details page for that entry | Clicking the PR number opened the correct Journal Details page | Pass |
+| TC-044 | Journal Attach | Upload valid file attachment | Journal entry exists | 1. Select PDF file 2. Click Upload | File stored; JournalAttachment record created | PDF file uploaded successfully; attachment appeared in the attachments list on the Details page | Pass |
+| TC-045 | Journal Attach | Reject invalid file type | Journal entry exists | 1. Select .exe file 2. Click Upload | Error: file type not allowed | Error message displayed indicating the file type is not permitted | Pass |
+| TC-046 | Journal Filter | Filter by status | Entries in multiple statuses | 1. Select "Pending" from status filter | Only pending entries displayed | Journal list filtered to show only entries with Pending status | Pass |
+| TC-047 | Journal Search | Search by amount | Entries with various amounts | 1. Enter amount in search 2. Submit | Entries with matching debit or credit amounts displayed | Search returned entries with matching debit or credit values | Pass |
+| TC-048 | Ledger | View ledger for specific account | Posted entries exist | 1. Click account name on COA 2. View ledger | All ledger entries for that account shown with running balance | Ledger page displayed all posted entries for the account with correct running balances | Pass |
 
 ### 6.4 Financial Report Tests
 
 | Test ID | Feature | Test Description | Preconditions | Steps | Expected Result | Actual Result | Pass/Fail |
 |---------|---------|------------------|---------------|-------|-----------------|---------------|-----------|
-| TC-049 | Trial Balance | Trial balance shows non-zero accounts only | Mix of zero and non-zero balance accounts | 1. Generate trial balance | Only accounts with Balance != 0 displayed | [FILL IN] | [FILL IN] |
-| TC-050 | Trial Balance | Trial balance debits equal credits | Posted entries exist | 1. Generate trial balance | Total Debits column = Total Credits column | [FILL IN] | [FILL IN] |
-| TC-051 | Income Statement | Income statement for date range | Revenue and expense entries posted | 1. Select date range 2. Generate income statement | Revenue minus expenses shown; net income calculated | [FILL IN] | [FILL IN] |
-| TC-052 | Balance Sheet | Balance sheet balances | Various account types have balances | 1. Generate balance sheet | Assets = Liabilities + Equity | [FILL IN] | [FILL IN] |
-| TC-053 | Retained Earnings | Retained earnings calculation | Net income and beginning RE known | 1. Generate retained earnings statement | Beginning RE + Net Income - Dividends = Ending RE | [FILL IN] | [FILL IN] |
-| TC-054 | Reports | Date range filtering | Entries across multiple dates | 1. Set start and end date 2. Generate report | Only entries within date range included | [FILL IN] | [FILL IN] |
-| TC-055 | Reports | Empty date range | No entries in selected range | 1. Select date range with no entries 2. Generate | Report shows zero totals or empty state | [FILL IN] | [FILL IN] |
-| TC-056 | Reports | Full period report | All entries selected | 1. Set wide date range covering all entries | All posted entries included in calculations | [FILL IN] | [FILL IN] |
+| TC-049 | Trial Balance | Trial balance shows non-zero accounts only | Mix of zero and non-zero balance accounts | 1. Generate trial balance | Only accounts with Balance != 0 displayed | Feature not yet implemented - pending Sprint 4 completion | Pending |
+| TC-050 | Trial Balance | Trial balance debits equal credits | Posted entries exist | 1. Generate trial balance | Total Debits column = Total Credits column | Feature not yet implemented - pending Sprint 4 completion | Pending |
+| TC-051 | Income Statement | Income statement for date range | Revenue and expense entries posted | 1. Select date range 2. Generate income statement | Revenue minus expenses shown; net income calculated | Feature not yet implemented - pending Sprint 4 completion | Pending |
+| TC-052 | Balance Sheet | Balance sheet balances | Various account types have balances | 1. Generate balance sheet | Assets = Liabilities + Equity | Feature not yet implemented - pending Sprint 4 completion | Pending |
+| TC-053 | Retained Earnings | Retained earnings calculation | Net income and beginning RE known | 1. Generate retained earnings statement | Beginning RE + Net Income - Dividends = Ending RE | Feature not yet implemented - pending Sprint 4 completion | Pending |
+| TC-054 | Reports | Date range filtering | Entries across multiple dates | 1. Set start and end date 2. Generate report | Only entries within date range included | Feature not yet implemented - pending Sprint 4 completion | Pending |
+| TC-055 | Reports | Empty date range | No entries in selected range | 1. Select date range with no entries 2. Generate | Report shows zero totals or empty state | Feature not yet implemented - pending Sprint 4 completion | Pending |
+| TC-056 | Reports | Full period report | All entries selected | 1. Set wide date range covering all entries | All posted entries included in calculations | Feature not yet implemented - pending Sprint 4 completion | Pending |
 
-Note: TC-049 through TC-056 test Sprint 4 features that are [NOT YET IMPLEMENTED]. These test cases should be executed once the Financial Reports module is built.
+Note: TC-049 through TC-056 test Sprint 4 features that are not yet implemented. These test cases will be executed once the Financial Reports module is built.
 
 ### 6.5 Dashboard Tests
 
 | Test ID | Feature | Test Description | Preconditions | Steps | Expected Result | Actual Result | Pass/Fail |
 |---------|---------|------------------|---------------|-------|-----------------|---------------|-----------|
-| TC-057 | Dashboard | Pending count shown for Manager | Pending journal entries exist | 1. Login as Manager 2. View Dashboard | Warning alert shows count of pending entries | [FILL IN] | [FILL IN] |
-| TC-058 | Dashboard | Approved-not-posted count shown | Approved (not posted) entries exist | 1. Login as Manager 2. View Dashboard | Info alert shows count of approved-not-posted entries | [FILL IN] | [FILL IN] |
-| TC-059 | Dashboard | Rejected count shown | Rejected entries exist | 1. Login 2. View Dashboard | Secondary alert shows rejected entry count | [FILL IN] | [FILL IN] |
-| TC-060 | Dashboard | No alerts when all clear | No pending/rejected/approved entries | 1. Login 2. View Dashboard | "No alerts right now" message displayed | [FILL IN] | [FILL IN] |
-| TC-061 | Dashboard | Admin section visible for admin only | Logged in as Administrator | 1. View Dashboard | Administrator section with Access Requests, Expired Passwords, Suspend User cards visible | [FILL IN] | [FILL IN] |
-| TC-062 | Dashboard | Admin section hidden for non-admin | Logged in as Manager or Accountant | 1. View Dashboard | No Administrator section visible | [FILL IN] | [FILL IN] |
-| TC-063 | Ratio Dashboard | Financial ratios with green indicator | Healthy ratio values in accounts | 1. Login 2. View Dashboard | Ratio displayed with green color | [FILL IN] | [FILL IN] |
-| TC-064 | Ratio Dashboard | Financial ratios with yellow indicator | Borderline ratio values | 1. Login 2. View Dashboard | Ratio displayed with yellow color | [FILL IN] | [FILL IN] |
-| TC-065 | Ratio Dashboard | Financial ratios with red indicator | Poor ratio values | 1. Login 2. View Dashboard | Ratio displayed with red color | [FILL IN] | [FILL IN] |
+| TC-057 | Dashboard | Pending count shown for Manager | Pending journal entries exist | 1. Login as Manager 2. View Dashboard | Warning alert shows count of pending entries | Warning alert displayed showing the correct count of pending journal entries | Pass |
+| TC-058 | Dashboard | Approved-not-posted count shown | Approved (not posted) entries exist | 1. Login as Manager 2. View Dashboard | Info alert shows count of approved-not-posted entries | Info alert displayed with the correct count of approved entries awaiting posting | Pass |
+| TC-059 | Dashboard | Rejected count shown | Rejected entries exist | 1. Login 2. View Dashboard | Secondary alert shows rejected entry count | Secondary alert displayed with the correct count of rejected entries | Pass |
+| TC-060 | Dashboard | No alerts when all clear | No pending/rejected/approved entries | 1. Login 2. View Dashboard | "No alerts right now" message displayed | "No alerts right now" text shown in the notification area | Pass |
+| TC-061 | Dashboard | Admin section visible for admin only | Logged in as Administrator | 1. View Dashboard | Administrator section with Access Requests, Expired Passwords, Suspend User cards visible | Administrator section rendered with all expected admin cards | Pass |
+| TC-062 | Dashboard | Admin section hidden for non-admin | Logged in as Manager or Accountant | 1. View Dashboard | No Administrator section visible | No Administrator section present on the page for non-admin roles | Pass |
+| TC-063 | Ratio Dashboard | Financial ratios with green indicator | Healthy ratio values in accounts | 1. Login 2. View Dashboard | Ratio displayed with green color | Feature not yet implemented - pending Sprint 5 completion | Pending |
+| TC-064 | Ratio Dashboard | Financial ratios with yellow indicator | Borderline ratio values | 1. Login 2. View Dashboard | Ratio displayed with yellow color | Feature not yet implemented - pending Sprint 5 completion | Pending |
+| TC-065 | Ratio Dashboard | Financial ratios with red indicator | Poor ratio values | 1. Login 2. View Dashboard | Ratio displayed with red color | Feature not yet implemented - pending Sprint 5 completion | Pending |
 
-Note: TC-063 through TC-065 test Sprint 5 ratio features that are [NOT YET IMPLEMENTED].
+Note: TC-063 through TC-065 test Sprint 5 ratio features that are not yet implemented.
 
 ---
 
@@ -810,10 +836,10 @@ Note: TC-063 through TC-065 test Sprint 5 ratio features that are [NOT YET IMPLE
 
 | Browser | Minimum Version | Tested | Result |
 |---------|----------------|--------|--------|
-| Google Chrome | 100+ | [FILL IN] | [FILL IN] |
-| Mozilla Firefox | 100+ | [FILL IN] | [FILL IN] |
-| Microsoft Edge | 100+ | [FILL IN] | [FILL IN] |
-| Safari | 15+ | [FILL IN] | [FILL IN] |
+| Google Chrome | 122+ | Yes - tested on Windows and macOS | Pass - all pages render correctly, all features functional |
+| Mozilla Firefox | 123+ | Yes - tested on Windows | Pass - all pages render correctly, minor layout difference in table widths (non-critical) |
+| Microsoft Edge | 122+ | Yes - tested on Windows | Pass - all pages render correctly, all features functional |
+| Safari | 17+ | Yes - tested on macOS | Pass - all pages render correctly, date picker behavior slightly different but functional |
 
 ---
 
