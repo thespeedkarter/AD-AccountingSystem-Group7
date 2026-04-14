@@ -45,10 +45,13 @@ namespace AccountingSystem.Pages.ChartOfAccounts
             return Page();
         }
 
-        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> OnPostAsync()
         {
-            var existing = await _db.ChartAccounts.AsNoTracking()
+            if (!User.IsInRole("Administrator"))
+                return Forbid();
+
+            var existing = await _db.ChartAccounts
+                .AsNoTracking()
                 .FirstOrDefaultAsync(a => a.ChartAccountId == Input.ChartAccountId);
 
             if (existing == null) return NotFound();
@@ -56,11 +59,19 @@ namespace AccountingSystem.Pages.ChartOfAccounts
             if (!ModelState.IsValid)
                 return Page();
 
-            if (await _db.ChartAccounts.AnyAsync(a => a.ChartAccountId != Input.ChartAccountId && a.AccountNumber == Input.AccountNumber))
+            if (await _db.ChartAccounts.AnyAsync(a =>
+                    a.ChartAccountId != Input.ChartAccountId &&
+                    a.AccountNumber == Input.AccountNumber))
+            {
                 ModelState.AddModelError(string.Empty, "Duplicate account number is not allowed.");
+            }
 
-            if (await _db.ChartAccounts.AnyAsync(a => a.ChartAccountId != Input.ChartAccountId && a.AccountName == Input.AccountName))
+            if (await _db.ChartAccounts.AnyAsync(a =>
+                    a.ChartAccountId != Input.ChartAccountId &&
+                    a.AccountName == Input.AccountName))
+            {
                 ModelState.AddModelError(string.Empty, "Duplicate account name is not allowed.");
+            }
 
             if (!ModelState.IsValid)
                 return Page();
@@ -85,9 +96,11 @@ namespace AccountingSystem.Pages.ChartOfAccounts
             return RedirectToPage("./Edit", new { id = Input.ChartAccountId });
         }
 
-        [Authorize(Roles = "Administrator")]
         public async Task<IActionResult> OnPostDeactivateAsync()
         {
+            if (!User.IsInRole("Administrator"))
+                return Forbid();
+
             var acct = await _db.ChartAccounts.FirstOrDefaultAsync(a => a.ChartAccountId == Input.ChartAccountId);
             if (acct == null) return NotFound();
 
@@ -121,7 +134,10 @@ namespace AccountingSystem.Pages.ChartOfAccounts
 
         public async Task<IActionResult> OnPostSendEmailAsync()
         {
-            var acct = await _db.ChartAccounts.AsNoTracking().FirstOrDefaultAsync(a => a.ChartAccountId == Input.ChartAccountId);
+            var acct = await _db.ChartAccounts
+                .AsNoTracking()
+                .FirstOrDefaultAsync(a => a.ChartAccountId == Input.ChartAccountId);
+
             if (acct == null) return NotFound();
 
             if (string.IsNullOrWhiteSpace(EmailSubject) || string.IsNullOrWhiteSpace(EmailBody))

@@ -50,6 +50,7 @@ builder.Services.AddScoped<IEventLogger, EventLogger>();
 builder.Services.AddScoped<IPostingService, PostingService>();
 
 builder.Services.AddScoped<IEmailSender, AccountingSystem.Services.DbEmailSender>();
+builder.Services.AddScoped<IFinancialReportService, FinancialReportService>();
 
 // File upload size
 builder.Services.Configure<FormOptions>(o =>

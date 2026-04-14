@@ -5,12 +5,112 @@
     ViewData["Title"] = "Dashboard";
 }
 
-<h2>Dashboard / Table of Contents</h2>
+<h2>Dashboard</h2>
 
 @if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
 {
     <div class="alert alert-success">@Model.StatusMessage</div>
 }
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="text-muted small">Pending Journal Entries</div>
+                <div class="display-6 fw-semibold">@Model.PendingJournalCount</div>
+                <a class="btn btn-sm btn-outline-primary mt-2"
+                   asp-page="/Journal/Index"
+                   asp-route-Status="@((int)JournalStatus.Pending)">
+                    View
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="text-muted small">Approved Not Posted</div>
+                <div class="display-6 fw-semibold">@Model.ApprovedNotPostedCount</div>
+                <a class="btn btn-sm btn-outline-primary mt-2"
+                   asp-page="/Journal/Index"
+                   asp-route-Status="@((int)JournalStatus.Approved)">
+                    View
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="text-muted small">Rejected Entries</div>
+                <div class="display-6 fw-semibold">@Model.RejectedJournalCount</div>
+                <a class="btn btn-sm btn-outline-primary mt-2"
+                   asp-page="/Journal/Index"
+                   asp-route-Status="@((int)JournalStatus.Rejected)">
+                    View
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="text-muted small">Adjusting Entries</div>
+                <div class="display-6 fw-semibold">@Model.AdjustingEntryCount</div>
+                <a class="btn btn-sm btn-outline-primary mt-2"
+                   asp-page="/Journal/Index"
+                   asp-route-IsAdjusting="true">
+                    View
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="text-muted small">Total Accounts</div>
+                <div class="display-6 fw-semibold">@Model.TotalAccountCount</div>
+                <a class="btn btn-sm btn-outline-primary mt-2"
+                   asp-page="/ChartOfAccounts/Index">
+                    View Chart
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="text-muted small">Active Accounts</div>
+                <div class="display-6 fw-semibold">@Model.ActiveAccountCount</div>
+                <a class="btn btn-sm btn-outline-primary mt-2"
+                   asp-page="/ChartOfAccounts/Index">
+                    View
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="text-muted small">Inactive Accounts</div>
+                <div class="display-6 fw-semibold">@Model.InactiveAccountCount</div>
+                <a class="btn btn-sm btn-outline-primary mt-2"
+                   asp-page="/ChartOfAccounts/Index"
+                   asp-route-ShowInactive="true">
+                    View
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="row mb-4">
     <div class="col-md-12">
@@ -36,13 +136,24 @@
 
                 @if (Model.RejectedJournalCount > 0)
                 {
-                    <div class="alert alert-secondary mb-0">
+                    <div class="alert alert-secondary mb-2">
                         Rejected journal entries: <strong>@Model.RejectedJournalCount</strong>.
                         <a class="ms-2" asp-page="/Journal/Index" asp-route-Status="@((int)JournalStatus.Rejected)">View</a>
                     </div>
                 }
 
-                @if (Model.PendingJournalCount == 0 && Model.ApprovedNotPostedCount == 0 && Model.RejectedJournalCount == 0)
+                @if (Model.ExpiredPasswordCount > 0 && User.IsInRole("Administrator"))
+                {
+                    <div class="alert alert-danger mb-0">
+                        There are <strong>@Model.ExpiredPasswordCount</strong> expired password account(s).
+                        <a class="ms-2" asp-page="/Admin/ExpiredPasswords">View</a>
+                    </div>
+                }
+
+                @if (Model.PendingJournalCount == 0 &&
+                                Model.ApprovedNotPostedCount == 0 &&
+                                Model.RejectedJournalCount == 0 &&
+                                (!User.IsInRole("Administrator") || Model.ExpiredPasswordCount == 0))
                 {
                     <div class="text-muted">No alerts right now.</div>
                 }
@@ -52,29 +163,29 @@
 </div>
 
 <div class="row g-3">
-    <div class="col-md-4">
+    <div class="col-md-3">
         <div class="card h-100">
             <div class="card-body">
                 <h5 class="card-title">Chart of Accounts</h5>
-                <p class="card-text small text-muted">Search, filter, add/edit (Admin only), view balances.</p>
+                <p class="card-text small text-muted">Search, filter, add/edit (Admin only), and view balances.</p>
                 <a class="btn btn-outline-primary w-100" asp-page="/ChartOfAccounts/Index">Open</a>
-
-                @* Event Logs quick link (only if you created a page for it) *@
-                <a class="btn btn-outline-secondary w-100 mt-2" asp-page="/Admin/EventLogs">View Event Logs</a>
+                <a class="btn btn-outline-secondary w-100 mt-2" asp-page="/ChartOfAccounts/Logs">Event Logs</a>
             </div>
         </div>
     </div>
 
-    <div class="col-md-4">
+    <div class="col-md-3">
         <div class="card h-100">
             <div class="card-body">
                 <h5 class="card-title">Journal</h5>
-                <p class="card-text small text-muted">Create/submit entries, approve/reject (Manager), post to ledger.</p>
+                <p class="card-text small text-muted">Create, submit, approve/reject, and post journal entries.</p>
                 <a class="btn btn-outline-primary w-100" asp-page="/Journal/Index">Open</a>
 
                 @if (User.IsInRole("Manager"))
                 {
-                    <a class="btn btn-outline-success w-100 mt-2" asp-page="/Journal/Index" asp-route-Status="@((int)JournalStatus.Pending)">
+                    <a class="btn btn-outline-success w-100 mt-2"
+                       asp-page="/Journal/Index"
+                       asp-route-Status="@((int)JournalStatus.Pending)">
                         Pending Approvals
                     </a>
                 }
@@ -82,15 +193,28 @@
         </div>
     </div>
 
-    <div class="col-md-4">
+    <div class="col-md-3">
         <div class="card h-100">
             <div class="card-body">
                 <h5 class="card-title">Ledger</h5>
-                <p class="card-text small text-muted">Ledger is opened from a Chart of Accounts account name (click it).</p>
+                <p class="card-text small text-muted">Open account ledgers from the Chart of Accounts.</p>
                 <a class="btn btn-outline-primary w-100" asp-page="/ChartOfAccounts/Index">Go via Chart</a>
             </div>
         </div>
     </div>
+
+    @if (User.IsInRole("Manager"))
+    {
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Reports</h5>
+                    <p class="card-text small text-muted">Trial Balance, Income Statement, Balance Sheet, and Retained Earnings.</p>
+                    <a class="btn btn-outline-primary w-100" asp-page="/Reports/Index">Open</a>
+                </div>
+            </div>
+        </div>
+    }
 </div>
 
 @if (User.IsInRole("Administrator"))
@@ -99,32 +223,46 @@
     <h4>Administrator</h4>
 
     <div class="row g-3">
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card h-100">
                 <div class="card-body">
                     <h5 class="card-title">Access Requests</h5>
                     <p class="card-text small text-muted">Approve/reject new user requests and assign roles.</p>
-                    <a class="btn btn-outline-primary w-100" asp-page="/Admin/AccessRequests">Open</a>
+                    <div class="display-6 fw-semibold">@Model.PendingAccessRequestCount</div>
+                    <a class="btn btn-outline-primary w-100 mt-2" asp-page="/Admin/AccessRequests">Open</a>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card h-100">
                 <div class="card-body">
                     <h5 class="card-title">Expired Passwords</h5>
-                    <p class="card-text small text-muted">View users with expired passwords.</p>
-                    <a class="btn btn-outline-primary w-100" asp-page="/Admin/ExpiredPasswords">Open</a>
+                    <p class="card-text small text-muted">Review users with expired passwords.</p>
+                    <div class="display-6 fw-semibold">@Model.ExpiredPasswordCount</div>
+                    <a class="btn btn-outline-primary w-100 mt-2" asp-page="/Admin/ExpiredPasswords">Open</a>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card h-100">
                 <div class="card-body">
-                    <h5 class="card-title">Suspend User</h5>
-                    <p class="card-text small text-muted">Suspend a user between a start and end date.</p>
-                    <a class="btn btn-outline-primary w-100" asp-page="/Admin/SuspendUser">Open</a>
+                    <h5 class="card-title">Users</h5>
+                    <p class="card-text small text-muted">Manage roles, active status, and account settings.</p>
+                    <div class="display-6 fw-semibold">@Model.TotalUserCount</div>
+                    <a class="btn btn-outline-primary w-100 mt-2" asp-page="/Admin/Users/Index">Open</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Email Outbox</h5>
+                    <p class="card-text small text-muted">Review application-generated emails and notifications.</p>
+                    <div class="display-6 fw-semibold">@Model.EmailOutboxCount</div>
+                    <a class="btn btn-outline-primary w-100 mt-2" asp-page="/Admin/EmailOutbox">Open</a>
                 </div>
             </div>
         </div>
@@ -139,7 +277,7 @@
         <a class="btn btn-outline-secondary w-100" href="/Identity/Account/Manage">Manage Account</a>
     </div>
     <div class="col-md-4">
-        <a class="btn btn-outline-secondary w-100" href="/Identity/Account/ForgotPasswordCustom">Forgot Password</a>
+        <a class="btn btn-outline-secondary w-100" href="/Identity/Account/ForgotPassword">Forgot Password</a>
     </div>
     <div class="col-md-4">
         <form method="post" action="/Identity/Account/Logout" class="m-0">

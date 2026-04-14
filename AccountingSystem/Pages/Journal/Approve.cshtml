@@ -14,6 +14,11 @@
     <strong>Status:</strong> @Model.Entry.Status
 </div>
 
+@if (Model.Entry.IsAdjusting)
+{
+    <span class="badge bg-dark ms-2">Adjusting Entry</span>
+}
+
 <table class="table table-striped">
     <thead>
         <tr>

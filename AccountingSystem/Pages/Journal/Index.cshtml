@@ -36,6 +36,14 @@
     </div>
 
     <div class="col-md-2">
+        <select class="form-select" name="IsAdjusting" title="Filter by adjusting entry type">
+            <option value="">All Types</option>
+            <option value="true" selected="@(Model.IsAdjusting == true ? "selected" : null)">Adjusting</option>
+            <option value="false" selected="@(Model.IsAdjusting == false ? "selected" : null)">Regular</option>
+        </select>
+    </div>
+
+    <div class="col-md-2">
         <input class="form-control" type="date" name="From" value="@(Model.From?.ToString("yyyy-MM-dd"))" title="Filter from date" />
     </div>
 
@@ -43,12 +51,12 @@
         <input class="form-control" type="date" name="To" value="@(Model.To?.ToString("yyyy-MM-dd"))" title="Filter to date" />
     </div>
 
-    <div class="col-md-3">
-        <input class="form-control" name="Search" value="@Model.Search" placeholder="Search by account name, amount, or date" title="Search by account name, amount, or date" />
+    <div class="col-md-2">
+        <input class="form-control" name="Search" value="@Model.Search" placeholder="Search by account, amount, date" title="Search by account name, amount, or date" />
     </div>
 
-    <div class="col-md-2">
-        <button class="btn btn-primary w-100" type="submit" title="Apply search and filters">Apply</button>
+    <div class="col-md-1">
+        <button class="btn btn-primary w-100" type="submit" title="Apply search and filters">Go</button>
     </div>
 </form>
 
@@ -62,6 +70,7 @@
         <tr>
             <th>#</th>
             <th>Date</th>
+            <th>Type</th>
             <th>Status</th>
             <th>Lines</th>
             <th class="text-end">Total Debit</th>
@@ -82,6 +91,16 @@
             <tr>
                 <td>@e.JournalEntryId</td>
                 <td>@e.EntryDate.ToShortDateString()</td>
+                <td>
+                    @if (e.IsAdjusting)
+                    {
+                        <span class="badge bg-dark">Adjusting</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-light text-dark border">Regular</span>
+                    }
+                </td>
                 <td>
                     <span class="badge bg-secondary">@e.Status</span>
                 </td>

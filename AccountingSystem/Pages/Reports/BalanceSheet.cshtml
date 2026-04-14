@@ -1,0 +1,154 @@
+﻿@page
+@model AccountingSystem.Pages.Reports.BalanceSheetModel
+@{
+    ViewData["Title"] = "Balance Sheet";
+}
+
+<h2>Balance Sheet</h2>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-3">
+        <label class="form-label">As Of Date</label>
+        <input class="form-control" type="date" asp-for="AsOfDate" />
+    </div>
+    <div class="col-md-3 d-flex align-items-end">
+        <button class="btn btn-primary w-100" type="submit" title="Generate balance sheet">
+            Generate
+        </button>
+    </div>
+</form>
+
+<div class="mb-3 d-flex gap-2">
+    <button class="btn btn-outline-secondary" type="button" onclick="window.print()" title="Print this report">
+        Print
+    </button>
+
+    <form method="post" asp-page-handler="ExportCsv" class="d-inline">
+        <input type="hidden" name="asOfDate" value="@Model.AsOfDate?.ToString("yyyy-MM-dd")" />
+        <button class="btn btn-outline-dark" type="submit" title="Download this report as CSV">
+            Export CSV
+        </button>
+    </form>
+
+    <form method="post" asp-page-handler="Email" class="d-inline">
+        <input type="hidden" name="asOfDate" value="@Model.AsOfDate?.ToString("yyyy-MM-dd")" />
+        <button class="btn btn-outline-success" type="submit" title="Email this report to outbox">
+            Email
+        </button>
+    </form>
+
+    <a class="btn btn-outline-secondary" asp-page="./Index" title="Back to reports">
+        Back
+    </a>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+{
+    <div class="alert alert-success">@Model.StatusMessage</div>
+}
+
+@if (Model.Rows.Count == 0)
+{
+    <div class="alert alert-secondary">No report rows found.</div>
+}
+else
+{
+    var assets = Model.Rows.Where(x => x.AccountNumber >= 1000 && x.AccountNumber < 2000).ToList();
+    var liabilities = Model.Rows.Where(x => x.AccountNumber >= 2000 && x.AccountNumber < 3000).ToList();
+    var equity = Model.Rows.Where(x => x.AccountNumber >= 3000 && x.AccountNumber < 4000).ToList();
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Assets</h5>
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Account</th>
+                                <th class="text-end">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var r in assets)
+                            {
+                                <tr>
+                                    <td>@r.AccountName</td>
+                                    <td class="text-end">@r.Amount.ToString("N2")</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th>Total Assets</th>
+                                <th class="text-end">@assets.Sum(x => x.Amount).ToString("N2")</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Liabilities</h5>
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Account</th>
+                                <th class="text-end">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var r in liabilities)
+                            {
+                                <tr>
+                                    <td>@r.AccountName</td>
+                                    <td class="text-end">@r.Amount.ToString("N2")</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th>Total Liabilities</th>
+                                <th class="text-end">@liabilities.Sum(x => x.Amount).ToString("N2")</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Equity</h5>
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Account</th>
+                                <th class="text-end">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var r in equity)
+                            {
+                                <tr>
+                                    <td>@r.AccountName</td>
+                                    <td class="text-end">@r.Amount.ToString("N2")</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th>Total Equity</th>
+                                <th class="text-end">@equity.Sum(x => x.Amount).ToString("N2")</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+}

@@ -20,7 +20,7 @@ namespace AccountingSystem.Pages.Admin
 
         public List<IdentityUser> Users { get; set; } = new();
 
-        [BindProperty] public string SelectedUserId { get; set; }
+        [BindProperty] public string? SelectedUserId { get; set; }
         [BindProperty] public DateTime? SuspendedFrom { get; set; }
         [BindProperty] public DateTime? SuspendedUntil { get; set; }
         [BindProperty] public bool DeactivateAccount { get; set; }

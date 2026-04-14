@@ -31,7 +31,6 @@ namespace AccountingSystem.Pages.Journal
 
         public JournalEntry Entry { get; set; } = default!;
 
-        // Used by Details.cshtml
         public bool CanPost { get; private set; }
 
         [TempData] public string? StatusMessage { get; set; }
@@ -53,9 +52,8 @@ namespace AccountingSystem.Pages.Journal
 
             Entry = entry;
 
-            // Must be Approved, Balanced (>0), and user must be Manager
-            var totalD = Entry.Lines?.Sum(l => l.Debit) ?? 0m;
-            var totalC = Entry.Lines?.Sum(l => l.Credit) ?? 0m;
+            var totalD = Entry.Lines.Sum(l => l.Debit);
+            var totalC = Entry.Lines.Sum(l => l.Credit);
             var isBalanced = totalD == totalC && totalD > 0m;
 
             CanPost =
@@ -66,9 +64,11 @@ namespace AccountingSystem.Pages.Journal
             return Page();
         }
 
-        [Authorize(Roles = "Manager")]
         public async Task<IActionResult> OnPostPostAsync(int id)
         {
+            if (!User.IsInRole("Manager"))
+                return Forbid();
+
             var userId = _userManager.GetUserId(User);
             var (ok, message) = await _posting.PostAsync(id, userId);
 
@@ -78,16 +78,17 @@ namespace AccountingSystem.Pages.Journal
             return RedirectToPage("./Details", new { id });
         }
 
-        [Authorize(Roles = "Manager,Accountant")]
         public async Task<IActionResult> OnPostUploadAsync(int id)
         {
+            if (!(User.IsInRole("Manager") || User.IsInRole("Accountant")))
+                return Forbid();
+
             if (UploadFile == null || UploadFile.Length == 0)
             {
                 ErrorMessage = "Please choose a file to upload.";
                 return RedirectToPage("./Details", new { id });
             }
 
-            // Allowed extensions + content types (simple enforcement)
             var allowedExts = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             { ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".csv", ".jpg", ".jpeg", ".png" };
 
@@ -98,11 +99,9 @@ namespace AccountingSystem.Pages.Journal
                 return RedirectToPage("./Details", new { id });
             }
 
-            // Make sure journal exists
             var entry = await _db.JournalEntries.FirstOrDefaultAsync(e => e.JournalEntryId == id);
             if (entry == null) return NotFound();
 
-            // Folder: wwwroot/uploads/journal/{id}/
             var folderRel = Path.Combine("uploads", "journal", id.ToString());
             var folderAbs = Path.Combine(_env.WebRootPath, folderRel);
             Directory.CreateDirectory(folderAbs);

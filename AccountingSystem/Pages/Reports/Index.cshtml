@@ -1,0 +1,52 @@
+﻿@page
+@{
+    ViewData["Title"] = "Financial Reports";
+}
+
+<h2>Financial Reports</h2>
+
+<p class="text-muted">
+    Generate and review financial reports for a selected date or date range.
+</p>
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5>Trial Balance</h5>
+                <p class="text-muted small">View balances for all accounts.</p>
+                <a class="btn btn-primary" asp-page="./TrialBalance">Open</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5>Income Statement</h5>
+                <p class="text-muted small">View revenues and expenses.</p>
+                <a class="btn btn-primary" asp-page="./IncomeStatement">Open</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5>Balance Sheet</h5>
+                <p class="text-muted small">View assets, liabilities, and equity.</p>
+                <a class="btn btn-primary" asp-page="./BalanceSheet">Open</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5>Retained Earnings</h5>
+                <p class="text-muted small">View retained earnings accounts.</p>
+                <a class="btn btn-primary" asp-page="./RetainedEarnings">Open</a>
+            </div>
+        </div>
+    </div>
+</div>

@@ -25,7 +25,8 @@ namespace AccountingSystem.Pages.Journal
         [BindProperty]
         public JournalEntry Entry { get; set; } = new JournalEntry
         {
-            EntryDate = DateTime.Today
+            EntryDate = DateTime.Today,
+            IsAdjusting = false
         };
 
         [BindProperty]
@@ -76,7 +77,8 @@ namespace AccountingSystem.Pages.Journal
 
             Entry = new JournalEntry
             {
-                EntryDate = DateTime.Today
+                EntryDate = DateTime.Today,
+                IsAdjusting = false
             };
 
             Lines = new List<JournalLineInput>
@@ -147,7 +149,6 @@ namespace AccountingSystem.Pages.Journal
             _db.JournalEntries.Add(Entry);
             await _db.SaveChangesAsync();
 
-            // Manager notification
             var managers = await (
                 from u in _db.Users
                 join ur in _db.UserRoles on u.Id equals ur.UserId
@@ -162,9 +163,11 @@ namespace AccountingSystem.Pages.Journal
                 {
                     ToEmail = m.Email!,
                     ToUserId = m.Id,
-                    Subject = $"Journal Entry #{Entry.JournalEntryId} Submitted for Approval",
+                    Subject = Entry.IsAdjusting
+                        ? $"Adjusting Journal Entry #{Entry.JournalEntryId} Submitted for Approval"
+                        : $"Journal Entry #{Entry.JournalEntryId} Submitted for Approval",
                     BodyHtml =
-                        $@"<p>A journal entry has been submitted for approval.</p>
+                        $@"<p>A {(Entry.IsAdjusting ? "adjusting " : "")}journal entry has been submitted for approval.</p>
                            <p><strong>Journal Entry ID:</strong> {Entry.JournalEntryId}<br/>
                            <strong>Date:</strong> {Entry.EntryDate:d}<br/>
                            <strong>Description:</strong> {Entry.Description}</p>",

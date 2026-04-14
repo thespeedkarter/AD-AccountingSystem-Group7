@@ -20,26 +20,25 @@ namespace AccountingSystem.Models
         public DateTime EntryDate { get; set; } = DateTime.Today;
 
         [StringLength(200)]
-        public string? Description { get; set; } // usually empty per sprint
+        public string? Description { get; set; }
+
+        // Sprint 4: Adjusting entry flag
+        public bool IsAdjusting { get; set; } = false;
 
         public JournalStatus Status { get; set; } = JournalStatus.Pending;
 
-        // Manager rejection reason/comment (Sprint 3 #5)
         [StringLength(500)]
         public string? ManagerComment { get; set; }
 
-        // Who created it
         [StringLength(450)]
         public string? CreatedByUserId { get; set; }
 
         public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
 
-        // Approval
         [StringLength(450)]
         public string? ApprovedByUserId { get; set; }
         public DateTime? ApprovedAtUtc { get; set; }
 
-        // Posting
         [StringLength(450)]
         public string? PostedByUserId { get; set; }
         public DateTime? PostedAtUtc { get; set; }

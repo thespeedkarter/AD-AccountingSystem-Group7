@@ -14,9 +14,17 @@
             <label class="form-label">Entry Date</label>
             <input class="form-control" asp-for="Entry.EntryDate" type="date" />
         </div>
-        <div class="col-md-9">
+        <div class="col-md-6">
             <label class="form-label">Description (optional)</label>
             <input class="form-control" asp-for="Entry.Description" />
+        </div>
+        <div class="col-md-3 d-flex align-items-end">
+            <div class="form-check">
+                <input class="form-check-input" asp-for="Entry.IsAdjusting" />
+                <label class="form-check-label" asp-for="Entry.IsAdjusting">
+                    Adjusting Entry
+                </label>
+            </div>
         </div>
     </div>
 

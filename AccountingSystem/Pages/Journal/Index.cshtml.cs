@@ -26,6 +26,9 @@ namespace AccountingSystem.Pages.Journal
         public JournalStatus? Status { get; set; }
 
         [BindProperty(SupportsGet = true)]
+        public bool? IsAdjusting { get; set; }
+
+        [BindProperty(SupportsGet = true)]
         public DateTime? From { get; set; }
 
         [BindProperty(SupportsGet = true)]
@@ -48,6 +51,9 @@ namespace AccountingSystem.Pages.Journal
 
             if (Status.HasValue)
                 q = q.Where(e => e.Status == Status.Value);
+
+            if (IsAdjusting.HasValue)
+                q = q.Where(e => e.IsAdjusting == IsAdjusting.Value);
 
             if (From.HasValue)
                 q = q.Where(e => e.EntryDate >= From.Value.Date);
@@ -81,7 +87,6 @@ namespace AccountingSystem.Pages.Journal
                 .ToListAsync();
         }
 
-        // OPTION 1: Post only after approval
         public async Task<IActionResult> OnPostPostEntryAsync(int id)
         {
             if (!User.IsInRole("Manager"))
@@ -107,7 +112,6 @@ namespace AccountingSystem.Pages.Journal
                 return RedirectToPage();
             }
 
-            // Safety: must balance
             var totalDebit = je.Lines.Sum(l => l.Debit);
             var totalCredit = je.Lines.Sum(l => l.Credit);
             if (totalDebit != totalCredit)
@@ -119,16 +123,12 @@ namespace AccountingSystem.Pages.Journal
             var nowUtc = DateTime.UtcNow;
             var postedByUserId = _userManager.GetUserId(User);
 
-            // Mark as posted on the journal entry
             je.PostedAtUtc = nowUtc;
             je.PostedByUserId = postedByUserId;
             je.Status = JournalStatus.Posted;
 
-            // Create ledger rows
-            
             foreach (var line in je.Lines)
             {
-                // compute balance-after: last ledger balance for that account + (debit-credit)
                 var lastBalance = await _db.LedgerEntries
                     .Where(x => x.ChartAccountId == line.ChartAccountId)
                     .OrderByDescending(x => x.EntryDate)
@@ -152,8 +152,6 @@ namespace AccountingSystem.Pages.Journal
                 });
             }
 
-            // Update ChartAccounts totals + balance using ledger
-            
             var touchedAccountIds = je.Lines.Select(l => l.ChartAccountId).Distinct().ToList();
             foreach (var acctId in touchedAccountIds)
             {
@@ -164,7 +162,10 @@ namespace AccountingSystem.Pages.Journal
                     {
                         TotalDebit = g.Sum(x => x.Debit),
                         TotalCredit = g.Sum(x => x.Credit),
-                        EndBalance = g.OrderByDescending(x => x.EntryDate).ThenByDescending(x => x.LedgerEntryId).Select(x => x.BalanceAfter).FirstOrDefault()
+                        EndBalance = g.OrderByDescending(x => x.EntryDate)
+                                      .ThenByDescending(x => x.LedgerEntryId)
+                                      .Select(x => x.BalanceAfter)
+                                      .FirstOrDefault()
                     })
                     .FirstOrDefaultAsync();
 
@@ -187,6 +188,7 @@ namespace AccountingSystem.Pages.Journal
                 {
                     je.JournalEntryId,
                     je.Status,
+                    je.IsAdjusting,
                     je.PostedAtUtc,
                     je.PostedByUserId
                 }),

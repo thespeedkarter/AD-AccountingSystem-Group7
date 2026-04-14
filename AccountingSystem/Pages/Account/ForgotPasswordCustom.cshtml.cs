@@ -37,9 +37,8 @@ namespace AccountingSystem.Pages.Account
         [BindProperty, Required, Compare(nameof(NewPassword))]
         public string ConfirmPassword { get; set; } = "";
 
-        public async Task OnGetAsync()
+        public void OnGet()
         {
-            // blank
         }
 
         public async Task<IActionResult> OnPostAsync()

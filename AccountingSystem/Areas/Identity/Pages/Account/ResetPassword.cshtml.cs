@@ -51,7 +51,7 @@ namespace AccountingSystem.Areas.Identity.Pages.Account
             public string ConfirmPassword { get; set; }
         }
 
-        public async Task<IActionResult> OnGetAsync(string userId, string email, string code)
+        public IActionResult OnGet(string userId, string email, string code)
         {
             if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(code))
                 return BadRequest("Missing reset information.");

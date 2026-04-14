@@ -42,9 +42,8 @@ namespace AccountingSystem.Areas.Identity.Pages.Account
             public string SecurityAnswer { get; set; }
         }
 
-        public async Task OnGetAsync()
+        public void OnGet()
         {
-            // nothing
         }
 
         public async Task<IActionResult> OnPostAsync()

@@ -1,6 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-#nullable disable
+﻿#nullable disable
 
 using System;
 using System.Collections.Generic;
@@ -66,7 +64,7 @@ namespace AccountingSystem.Areas.Identity.Pages.Account
             if (!string.IsNullOrEmpty(ErrorMessage))
                 ModelState.AddModelError(string.Empty, ErrorMessage);
 
-            returnUrl ??= Url.Content("~/");
+            returnUrl ??= Url.Content("~/Dashboard");
             ReturnUrl = returnUrl;
 
             await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
@@ -76,7 +74,7 @@ namespace AccountingSystem.Areas.Identity.Pages.Account
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
-            returnUrl ??= Url.Content("~/");
+            returnUrl ??= Url.Content("~/Dashboard");
             ReturnUrl = returnUrl;
 
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
@@ -84,7 +82,6 @@ namespace AccountingSystem.Areas.Identity.Pages.Account
             if (!ModelState.IsValid)
                 return Page();
 
-            // Find by username OR email
             var input = Input.UsernameOrEmail?.Trim();
             if (string.IsNullOrWhiteSpace(input))
             {
@@ -102,7 +99,6 @@ namespace AccountingSystem.Areas.Identity.Pages.Account
                 return Page();
             }
 
-            // Check security row (create if missing)
             var sec = await _db.UserSecurities.FirstOrDefaultAsync(x => x.UserId == user.Id);
             if (sec == null)
             {
@@ -117,14 +113,12 @@ namespace AccountingSystem.Areas.Identity.Pages.Account
                 await _db.SaveChangesAsync();
             }
 
-            // Active check
             if (!sec.IsActive)
             {
                 ModelState.AddModelError(string.Empty, "Your account is inactive. Please contact an administrator.");
                 return Page();
             }
 
-            // Suspension check
             var now = DateTime.UtcNow;
             if (sec.SuspendedFrom.HasValue && sec.SuspendedUntil.HasValue
                 && now >= sec.SuspendedFrom.Value && now <= sec.SuspendedUntil.Value)
@@ -133,21 +127,18 @@ namespace AccountingSystem.Areas.Identity.Pages.Account
                 return Page();
             }
 
-            // Password expiry check
             if (now > sec.PasswordExpiresAt)
             {
                 ModelState.AddModelError(string.Empty, "Your password has expired. Please use 'Forgot password' to reset it.");
                 return Page();
             }
 
-            // 3-day warning
             var daysLeft = (sec.PasswordExpiresAt - now).TotalDays;
             if (daysLeft <= 3)
             {
                 ModelState.AddModelError(string.Empty, $"Warning: your password expires in {Math.Ceiling(daysLeft)} day(s).");
             }
 
-            
             var result = await _signInManager.PasswordSignInAsync(
                 user.UserName,
                 Input.Password,
@@ -157,12 +148,11 @@ namespace AccountingSystem.Areas.Identity.Pages.Account
             if (result.Succeeded)
             {
                 _logger.LogInformation("User logged in: {UserId}", user.Id);
-                return LocalRedirect(returnUrl);
+                return RedirectToPage("/Dashboard");
             }
 
             if (result.IsLockedOut)
             {
-                
                 sec.SuspendedFrom = DateTime.UtcNow;
                 sec.SuspendedUntil = DateTime.UtcNow.AddMinutes(30);
                 await _db.SaveChangesAsync();
