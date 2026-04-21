@@ -1,3 +1,4 @@
+using System.Text;
 using AccountingSystem.Data;
 using AccountingSystem.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -32,6 +33,64 @@ namespace AccountingSystem.Pages.ChartOfAccounts
 
         public async Task OnGetAsync()
         {
+            Accounts = await BuildQuery()
+                .OrderBy(a => a.OrderCode)
+                .ThenBy(a => a.AccountNumber)
+                .Take(500)
+                .ToListAsync();
+        }
+
+        public async Task<IActionResult> OnPostExportCsvAsync(
+            string? search,
+            AccountCategory? category,
+            string? subcategory,
+            decimal? amount,
+            bool showInactive)
+        {
+            Search = search;
+            Category = category;
+            Subcategory = subcategory;
+            Amount = amount;
+            ShowInactive = showInactive;
+
+            var rows = await BuildQuery()
+                .OrderBy(a => a.OrderCode)
+                .ThenBy(a => a.AccountNumber)
+                .ToListAsync();
+
+            var sb = new StringBuilder();
+            sb.AppendLine("ChartAccountId,AccountNumber,AccountName,Category,Subcategory,Statement,NormalSide,InitialBalance,Debit,Credit,Balance,Status,AddedAtUtc");
+
+            foreach (var a in rows)
+            {
+                var accountName = EscapeCsv(a.AccountName);
+                var sub = EscapeCsv(a.Subcategory ?? "");
+                var statement = EscapeCsv(a.Statement);
+                var status = a.IsActive ? "Active" : "Inactive";
+
+                sb.AppendLine(
+                    $"{a.ChartAccountId}," +
+                    $"{a.AccountNumber}," +
+                    $"\"{accountName}\"," +
+                    $"{a.Category}," +
+                    $"\"{sub}\"," +
+                    $"\"{statement}\"," +
+                    $"{a.NormalSide}," +
+                    $"{a.InitialBalance:0.00}," +
+                    $"{a.Debit:0.00}," +
+                    $"{a.Credit:0.00}," +
+                    $"{a.Balance:0.00}," +
+                    $"{status}," +
+                    $"{a.AddedAtUtc:yyyy-MM-dd HH:mm:ss}"
+                );
+            }
+
+            var bytes = Encoding.UTF8.GetBytes(sb.ToString());
+            return File(bytes, "text/csv", "ChartOfAccounts.csv");
+        }
+
+        private IQueryable<ChartAccount> BuildQuery()
+        {
             IQueryable<ChartAccount> q = _db.ChartAccounts.AsNoTracking();
 
             if (!ShowInactive)
@@ -63,11 +122,12 @@ namespace AccountingSystem.Pages.ChartOfAccounts
                 }
             }
 
-            Accounts = await q
-                .OrderBy(a => a.OrderCode)
-                .ThenBy(a => a.AccountNumber)
-                .Take(500)
-                .ToListAsync();
+            return q;
+        }
+
+        private static string EscapeCsv(string value)
+        {
+            return value.Replace("\"", "\"\"");
         }
     }
 }

@@ -6,11 +6,75 @@
 }
 
 <h2>Dashboard</h2>
+<p class="text-muted mb-4">
+    Review ratios, alerts, recent activity, and quick access to accounting modules.
+</p>
+
+<div class="text-muted small mb-3">
+    Last updated: @DateTime.Now.ToString("g")
+</div>
 
 @if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
 {
     <div class="alert alert-success">@Model.StatusMessage</div>
 }
+
+<h4 class="mb-3">Financial Ratios</h4>
+
+<div class="row g-3 mb-3">
+    <div class="col-md-3">
+        <div class="card h-100 @Model.GetHighGoodRatioClass(Model.CurrentRatio, 2.0m, 1.0m)">
+            <div class="card-body text-center">
+                <div class="small opacity-75">Current Ratio</div>
+                <div class="display-6 fw-semibold">@Model.CurrentRatio.ToString("N2")</div>
+                <div class="small">Measures short-term liquidity</div>
+                <div class="small mt-1">@Model.GetCurrentRatioLabel()</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card h-100 @Model.GetHighGoodRatioClass(Model.QuickRatio, 1.5m, 1.0m)">
+            <div class="card-body text-center">
+                <div class="small opacity-75">Quick Ratio</div>
+                <div class="display-6 fw-semibold">@Model.QuickRatio.ToString("N2")</div>
+                <div class="small">Liquidity without inventory/prepaids</div>
+                <div class="small mt-1">@Model.GetQuickRatioLabel()</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card h-100 @Model.GetLowGoodRatioClass(Model.DebtRatio, 0.50m, 0.65m)">
+            <div class="card-body text-center">
+                <div class="small opacity-75">Debt Ratio</div>
+                <div class="display-6 fw-semibold">@Model.DebtRatio.ToString("P1")</div>
+                <div class="small">Liabilities compared to assets</div>
+                <div class="small mt-1">@Model.GetDebtRatioLabel()</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card h-100 @Model.GetHighGoodRatioClass(Model.NetProfitMargin, 0.20m, 0.10m)">
+            <div class="card-body text-center">
+                <div class="small opacity-75">Net Profit Margin</div>
+                <div class="display-6 fw-semibold">@Model.NetProfitMargin.ToString("P1")</div>
+                <div class="small">Profit earned from revenue</div>
+                <div class="small mt-1">@Model.GetNetProfitMarginLabel()</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <strong>Legend:</strong>
+        <span class="badge bg-success ms-2">Good</span>
+        <span class="badge bg-warning text-dark ms-2">Warning</span>
+        <span class="badge bg-danger ms-2">Needs Attention</span>
+    </div>
+</div>
 
 <div class="row g-3 mb-4">
     <div class="col-md-3">
@@ -112,53 +176,109 @@
     </div>
 </div>
 
-<div class="row mb-4">
-    <div class="col-md-12">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Notifications</h5>
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title">Notifications</h5>
 
-                @if (User.IsInRole("Manager") && Model.PendingJournalCount > 0)
-                {
-                    <div class="alert alert-warning mb-2">
-                        You have <strong>@Model.PendingJournalCount</strong> journal entries waiting for approval.
-                        <a class="ms-2" asp-page="/Journal/Index" asp-route-Status="@((int)JournalStatus.Pending)">View</a>
-                    </div>
-                }
-
-                @if (User.IsInRole("Manager") && Model.ApprovedNotPostedCount > 0)
-                {
-                    <div class="alert alert-info mb-2">
-                        There are <strong>@Model.ApprovedNotPostedCount</strong> approved entries not posted yet.
-                        <a class="ms-2" asp-page="/Journal/Index" asp-route-Status="@((int)JournalStatus.Approved)">View</a>
-                    </div>
-                }
-
-                @if (Model.RejectedJournalCount > 0)
-                {
-                    <div class="alert alert-secondary mb-2">
-                        Rejected journal entries: <strong>@Model.RejectedJournalCount</strong>.
-                        <a class="ms-2" asp-page="/Journal/Index" asp-route-Status="@((int)JournalStatus.Rejected)">View</a>
-                    </div>
-                }
-
-                @if (Model.ExpiredPasswordCount > 0 && User.IsInRole("Administrator"))
-                {
-                    <div class="alert alert-danger mb-0">
-                        There are <strong>@Model.ExpiredPasswordCount</strong> expired password account(s).
-                        <a class="ms-2" asp-page="/Admin/ExpiredPasswords">View</a>
-                    </div>
-                }
-
-                @if (Model.PendingJournalCount == 0 &&
-                                Model.ApprovedNotPostedCount == 0 &&
-                                Model.RejectedJournalCount == 0 &&
-                                (!User.IsInRole("Administrator") || Model.ExpiredPasswordCount == 0))
-                {
-                    <div class="text-muted">No alerts right now.</div>
-                }
+        @if (User.IsInRole("Manager") && Model.PendingJournalCount > 0)
+        {
+            <div class="alert alert-warning mb-2">
+                You have <strong>@Model.PendingJournalCount</strong> journal entries waiting for approval.
+                <a class="ms-2" asp-page="/Journal/Index" asp-route-Status="@((int)JournalStatus.Pending)">View</a>
             </div>
-        </div>
+        }
+
+        @if (User.IsInRole("Manager") && Model.ApprovedNotPostedCount > 0)
+        {
+            <div class="alert alert-info mb-2">
+                There are <strong>@Model.ApprovedNotPostedCount</strong> approved entries not posted yet.
+                <a class="ms-2" asp-page="/Journal/Index" asp-route-Status="@((int)JournalStatus.Approved)">View</a>
+            </div>
+        }
+
+        @if (Model.RejectedJournalCount > 0)
+        {
+            <div class="alert alert-secondary mb-2">
+                Rejected journal entries: <strong>@Model.RejectedJournalCount</strong>.
+                <a class="ms-2" asp-page="/Journal/Index" asp-route-Status="@((int)JournalStatus.Rejected)">View</a>
+            </div>
+        }
+
+        @if (Model.ExpiredPasswordCount > 0 && User.IsInRole("Administrator"))
+        {
+            <div class="alert alert-danger mb-0">
+                There are <strong>@Model.ExpiredPasswordCount</strong> expired password account(s).
+                <a class="ms-2" asp-page="/Admin/ExpiredPasswords">View</a>
+            </div>
+        }
+
+        @if (Model.PendingJournalCount == 0 &&
+                Model.ApprovedNotPostedCount == 0 &&
+                Model.RejectedJournalCount == 0 &&
+                (!User.IsInRole("Administrator") || Model.ExpiredPasswordCount == 0))
+        {
+            <div class="text-muted">No alerts right now.</div>
+        }
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title">Recent Activity</h5>
+
+        @if (Model.RecentEntries.Count == 0)
+        {
+            <div class="text-muted">No recent journal activity.</div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-sm table-striped align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var entry in Model.RecentEntries)
+                        {
+                            <tr>
+                                <td>@entry.JournalEntryId</td>
+                                <td>@entry.EntryDate.ToShortDateString()</td>
+                                <td>@(string.IsNullOrWhiteSpace(entry.Description) ? "-" : entry.Description)</td>
+                                <td>
+                                    @if (entry.IsAdjusting)
+                                    {
+                                        <span class="badge bg-dark">Adjusting</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-light text-dark border">Regular</span>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="badge @Model.GetStatusBadgeClass(entry.Status)">
+                                        @entry.Status
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    <a class="btn btn-sm btn-outline-secondary"
+                                       asp-page="/Journal/Details"
+                                       asp-route-id="@entry.JournalEntryId">
+                                        View
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
     </div>
 </div>
 

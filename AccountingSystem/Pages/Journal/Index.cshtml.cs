@@ -1,3 +1,4 @@
+using System.Text;
 using AccountingSystem.Data;
 using AccountingSystem.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -44,47 +45,57 @@ namespace AccountingSystem.Pages.Journal
 
         public async Task OnGetAsync()
         {
-            IQueryable<JournalEntry> q = _db.JournalEntries
-                .AsNoTracking()
-                .Include(e => e.Lines)
-                    .ThenInclude(l => l.ChartAccount);
-
-            if (Status.HasValue)
-                q = q.Where(e => e.Status == Status.Value);
-
-            if (IsAdjusting.HasValue)
-                q = q.Where(e => e.IsAdjusting == IsAdjusting.Value);
-
-            if (From.HasValue)
-                q = q.Where(e => e.EntryDate >= From.Value.Date);
-
-            if (To.HasValue)
-                q = q.Where(e => e.EntryDate <= To.Value.Date);
-
-            if (!string.IsNullOrWhiteSpace(Search))
-            {
-                var s = Search.Trim();
-
-                if (DateTime.TryParse(s, out var dt))
-                {
-                    var d = dt.Date;
-                    q = q.Where(e => e.EntryDate == d);
-                }
-                else if (decimal.TryParse(s, out var amt))
-                {
-                    q = q.Where(e => e.Lines.Any(l => l.Debit == amt || l.Credit == amt));
-                }
-                else
-                {
-                    q = q.Where(e => e.Lines.Any(l => l.ChartAccount != null && l.ChartAccount.AccountName.Contains(s)));
-                }
-            }
-
-            Entries = await q
+            Entries = await BuildQuery()
                 .OrderByDescending(e => e.EntryDate)
                 .ThenByDescending(e => e.JournalEntryId)
                 .Take(200)
                 .ToListAsync();
+        }
+
+        public async Task<IActionResult> OnPostExportCsvAsync(
+            JournalStatus? status,
+            bool? isAdjusting,
+            DateTime? from,
+            DateTime? to,
+            string? search)
+        {
+            Status = status;
+            IsAdjusting = isAdjusting;
+            From = from;
+            To = to;
+            Search = search;
+
+            var rows = await BuildQuery()
+                .OrderByDescending(e => e.EntryDate)
+                .ThenByDescending(e => e.JournalEntryId)
+                .ToListAsync();
+
+            var sb = new StringBuilder();
+            sb.AppendLine("JournalEntryId,EntryDate,Description,Status,Type,TotalDebit,TotalCredit,Posted,CreatedAtUtc");
+
+            foreach (var e in rows)
+            {
+                var totalDebit = e.Lines.Sum(l => l.Debit);
+                var totalCredit = e.Lines.Sum(l => l.Credit);
+                var description = EscapeCsv(e.Description ?? "");
+                var type = e.IsAdjusting ? "Adjusting" : "Regular";
+                var posted = e.PostedAtUtc.HasValue ? "Yes" : "No";
+
+                sb.AppendLine(
+                    $"{e.JournalEntryId}," +
+                    $"{e.EntryDate:yyyy-MM-dd}," +
+                    $"\"{description}\"," +
+                    $"{e.Status}," +
+                    $"{type}," +
+                    $"{totalDebit:0.00}," +
+                    $"{totalCredit:0.00}," +
+                    $"{posted}," +
+                    $"{e.CreatedAtUtc:yyyy-MM-dd HH:mm:ss}"
+                );
+            }
+
+            var bytes = Encoding.UTF8.GetBytes(sb.ToString());
+            return File(bytes, "text/csv", "JournalEntries.csv");
         }
 
         public async Task<IActionResult> OnPostPostEntryAsync(int id)
@@ -200,6 +211,54 @@ namespace AccountingSystem.Pages.Journal
 
             StatusMessage = $"Posted Journal Entry #{je.JournalEntryId}. Ledger and balances updated.";
             return RedirectToPage(new { Status = (int)JournalStatus.Approved });
+        }
+
+        private IQueryable<JournalEntry> BuildQuery()
+        {
+            IQueryable<JournalEntry> q = _db.JournalEntries
+                .AsNoTracking()
+                .Include(e => e.Lines)
+                    .ThenInclude(l => l.ChartAccount);
+
+            if (Status.HasValue)
+                q = q.Where(e => e.Status == Status.Value);
+
+            if (IsAdjusting.HasValue)
+                q = q.Where(e => e.IsAdjusting == IsAdjusting.Value);
+
+            if (From.HasValue)
+                q = q.Where(e => e.EntryDate >= From.Value.Date);
+
+            if (To.HasValue)
+                q = q.Where(e => e.EntryDate <= To.Value.Date);
+
+            if (!string.IsNullOrWhiteSpace(Search))
+            {
+                var s = Search.Trim();
+
+                if (DateTime.TryParse(s, out var dt))
+                {
+                    var d = dt.Date;
+                    q = q.Where(e => e.EntryDate == d);
+                }
+                else if (decimal.TryParse(s, out var amt))
+                {
+                    q = q.Where(e => e.Lines.Any(l => l.Debit == amt || l.Credit == amt));
+                }
+                else
+                {
+                    q = q.Where(e =>
+                        (e.Description != null && e.Description.Contains(s)) ||
+                        e.Lines.Any(l => l.ChartAccount != null && l.ChartAccount.AccountName.Contains(s)));
+                }
+            }
+
+            return q;
+        }
+
+        private static string EscapeCsv(string value)
+        {
+            return value.Replace("\"", "\"\"");
         }
     }
 }

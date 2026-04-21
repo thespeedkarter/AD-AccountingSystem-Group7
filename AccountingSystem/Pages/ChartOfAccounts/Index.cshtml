@@ -49,19 +49,31 @@
     <div class="col-md-1">
         <button class="btn btn-primary w-100" type="submit" title="Apply filters">Go</button>
     </div>
-
-    <div class="col-12">
-        @if (Model.IsAdmin)
-        {
-            <a class="btn btn-success" asp-page="./Create" title="Add a new account">+ Add Account</a>
-        }
-        <a class="btn btn-outline-secondary" asp-page="./Index" title="Clear all filters">Reset</a>
-    </div>
 </form>
+
+<div class="mb-3 d-flex gap-2 flex-wrap">
+    @if (Model.IsAdmin)
+    {
+        <a class="btn btn-success" asp-page="./Create" title="Add a new account">+ Add Account</a>
+    }
+
+    <a class="btn btn-outline-secondary" asp-page="./Index" title="Clear all filters">Reset</a>
+
+    <form method="post" asp-page-handler="ExportCsv" class="d-inline">
+        <input type="hidden" name="search" value="@Model.Search" />
+        <input type="hidden" name="category" value="@Model.Category" />
+        <input type="hidden" name="subcategory" value="@Model.Subcategory" />
+        <input type="hidden" name="amount" value="@Model.Amount" />
+        <input type="hidden" name="showInactive" value="@Model.ShowInactive" />
+        <button class="btn btn-outline-dark" type="submit" title="Download the filtered chart of accounts as CSV">
+            Export CSV
+        </button>
+    </form>
+</div>
 
 @if (Model.Accounts.Count == 0)
 {
-    <p class="text-muted">No accounts found.</p>
+    <div class="alert alert-secondary">No accounts found.</div>
 }
 else
 {
@@ -92,7 +104,10 @@ else
                     <td>@a.OrderCode</td>
                     <td>@a.AccountNumber</td>
                     <td>
-                        <a asp-page="/Ledger/Index" asp-route-accountId="@a.ChartAccountId" asp-route-id="@a.ChartAccountId" title="Open this account in the ledger">
+                        <a asp-page="/Ledger/Index"
+                           asp-route-accountId="@a.ChartAccountId"
+                           asp-route-id="@a.ChartAccountId"
+                           title="Open this account in the ledger">
                             @a.AccountName
                         </a>
                     </td>

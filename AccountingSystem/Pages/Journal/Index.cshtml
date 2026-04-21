@@ -11,7 +11,7 @@
     Journal entries can be reviewed and submitted for approval, but submitted entries cannot be deleted.
 </p>
 
-<div class="mb-3 d-flex gap-2">
+<div class="mb-3 d-flex gap-2 flex-wrap">
     @if (User.IsInRole("Manager") || User.IsInRole("Accountant"))
     {
         <a class="btn btn-primary" asp-page="./Create" title="Create a new journal entry">+ Create Journal Entry</a>
@@ -21,6 +21,17 @@
     {
         <a class="btn btn-outline-secondary" asp-page="/Ledger/Index" title="Open the ledger">View Ledger</a>
     }
+
+    <form method="post" asp-page-handler="ExportCsv" class="d-inline">
+        <input type="hidden" name="status" value="@Model.Status" />
+        <input type="hidden" name="isAdjusting" value="@Model.IsAdjusting" />
+        <input type="hidden" name="from" value="@Model.From?.ToString("yyyy-MM-dd")" />
+        <input type="hidden" name="to" value="@Model.To?.ToString("yyyy-MM-dd")" />
+        <input type="hidden" name="search" value="@Model.Search" />
+        <button class="btn btn-outline-dark" type="submit" title="Download the filtered journal list as CSV">
+            Export CSV
+        </button>
+    </form>
 </div>
 
 <form method="get" class="row g-2 mb-3">
@@ -65,90 +76,99 @@
     <div class="alert alert-info">@Model.StatusMessage</div>
 }
 
-<table class="table table-striped table-hover align-middle">
-    <thead>
-        <tr>
-            <th>#</th>
-            <th>Date</th>
-            <th>Type</th>
-            <th>Status</th>
-            <th>Lines</th>
-            <th class="text-end">Total Debit</th>
-            <th class="text-end">Total Credit</th>
-            <th>Posted?</th>
-            <th class="text-end">Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var e in Model.Entries)
-        {
-            var totalD = e.Lines.Sum(l => l.Debit);
-            var totalC = e.Lines.Sum(l => l.Credit);
-
-            var canApprove = User.IsInRole("Manager") && e.Status == JournalStatus.Pending;
-            var canPost = User.IsInRole("Manager") && e.Status == JournalStatus.Approved && e.PostedAtUtc == null;
-
+@if (Model.Entries.Count == 0)
+{
+    <div class="alert alert-secondary">
+        No journal entries found for the selected filters.
+    </div>
+}
+else
+{
+    <table class="table table-striped table-hover align-middle">
+        <thead>
             <tr>
-                <td>@e.JournalEntryId</td>
-                <td>@e.EntryDate.ToShortDateString()</td>
-                <td>
-                    @if (e.IsAdjusting)
-                    {
-                        <span class="badge bg-dark">Adjusting</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-light text-dark border">Regular</span>
-                    }
-                </td>
-                <td>
-                    <span class="badge bg-secondary">@e.Status</span>
-                </td>
-                <td>@e.Lines.Count</td>
-                <td class="text-end">@totalD.ToString("N2")</td>
-                <td class="text-end">@totalC.ToString("N2")</td>
-                <td>
-                    @if (e.PostedAtUtc != null)
-                    {
-                        <span class="badge bg-success">Yes</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-warning text-dark">No</span>
-                    }
-                </td>
-                <td class="text-end">
-                    <a class="btn btn-sm btn-outline-secondary"
-                       asp-page="./Details"
-                       asp-route-id="@e.JournalEntryId"
-                       title="View this journal entry">
-                        View
-                    </a>
-
-                    @if (canApprove)
-                    {
-                        <a class="btn btn-sm btn-outline-success ms-1"
-                           asp-page="./Approve"
-                           asp-route-id="@e.JournalEntryId"
-                           title="Approve or reject this journal entry">
-                            Approve/Reject
-                        </a>
-                    }
-
-                    @if (canPost)
-                    {
-                        <form method="post" asp-page-handler="PostEntry" class="d-inline">
-                            <input type="hidden" name="id" value="@e.JournalEntryId" />
-                            <button type="submit"
-                                    class="btn btn-sm btn-success ms-1"
-                                    title="Post this journal entry to the ledger"
-                                    onclick="return confirm('Post this entry? This will write to the ledger.');">
-                                Post
-                            </button>
-                        </form>
-                    }
-                </td>
+                <th>#</th>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Lines</th>
+                <th class="text-end">Total Debit</th>
+                <th class="text-end">Total Credit</th>
+                <th>Posted?</th>
+                <th class="text-end">Actions</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var e in Model.Entries)
+            {
+                var totalD = e.Lines.Sum(l => l.Debit);
+                var totalC = e.Lines.Sum(l => l.Credit);
+
+                var canApprove = User.IsInRole("Manager") && e.Status == JournalStatus.Pending;
+                var canPost = User.IsInRole("Manager") && e.Status == JournalStatus.Approved && e.PostedAtUtc == null;
+
+                <tr>
+                    <td>@e.JournalEntryId</td>
+                    <td>@e.EntryDate.ToShortDateString()</td>
+                    <td>
+                        @if (e.IsAdjusting)
+                        {
+                            <span class="badge bg-dark">Adjusting</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-light text-dark border">Regular</span>
+                        }
+                    </td>
+                    <td>
+                        <span class="badge bg-secondary">@e.Status</span>
+                    </td>
+                    <td>@e.Lines.Count</td>
+                    <td class="text-end">@totalD.ToString("N2")</td>
+                    <td class="text-end">@totalC.ToString("N2")</td>
+                    <td>
+                        @if (e.PostedAtUtc != null)
+                        {
+                            <span class="badge bg-success">Yes</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning text-dark">No</span>
+                        }
+                    </td>
+                    <td class="text-end">
+                        <a class="btn btn-sm btn-outline-secondary"
+                           asp-page="./Details"
+                           asp-route-id="@e.JournalEntryId"
+                           title="View this journal entry">
+                            View
+                        </a>
+
+                        @if (canApprove)
+                        {
+                            <a class="btn btn-sm btn-outline-success ms-1"
+                               asp-page="./Approve"
+                               asp-route-id="@e.JournalEntryId"
+                               title="Approve or reject this journal entry">
+                                Approve/Reject
+                            </a>
+                        }
+
+                        @if (canPost)
+                        {
+                            <form method="post" asp-page-handler="PostEntry" class="d-inline">
+                                <input type="hidden" name="id" value="@e.JournalEntryId" />
+                                <button type="submit"
+                                        class="btn btn-sm btn-success ms-1"
+                                        title="Post this journal entry to the ledger"
+                                        onclick="return confirm('Post this entry? This will write to the ledger.');">
+                                    Post
+                                </button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
