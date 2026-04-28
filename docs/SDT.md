@@ -158,6 +158,7 @@ erDiagram
         int JournalEntryId PK
         datetime2 EntryDate
         nvarchar Description
+        bit IsAdjusting
         int Status
         nvarchar ManagerComment
         nvarchar CreatedByUserId
@@ -272,6 +273,7 @@ erDiagram
 | JournalEntryId | int | PK, auto-increment | Primary key |
 | EntryDate | datetime2 | Required | Date of the accounting transaction |
 | Description | nvarchar(200) | Optional | Description of the journal entry |
+| IsAdjusting | bit | Required, default false | Flags the entry as an adjusting journal entry (period-end adjustment) |
 | Status | int | Required | 0=Pending, 1=Approved, 2=Rejected, 3=Posted |
 | ManagerComment | nvarchar(500) | Optional | Rejection reason or manager notes |
 | CreatedByUserId | nvarchar(450) | Optional | Identity user ID of creator |
@@ -585,19 +587,38 @@ flowchart TD
 
 ### 3.4 Financial Reports Module
 
-**Pages involved:** [NOT YET IMPLEMENTED - no report pages exist in the codebase]
+**Pages involved:**
+- Pages/Reports/Index.cshtml(.cs) - hub page with cards linking to each report
+- Pages/Reports/TrialBalance.cshtml(.cs) - trial balance report
+- Pages/Reports/IncomeStatement.cshtml(.cs) - income statement report
+- Pages/Reports/BalanceSheet.cshtml(.cs) - balance sheet report
+- Pages/Reports/RetainedEarnings.cshtml(.cs) - retained earnings report
 
-**Models involved:** ChartAccount, LedgerEntry (data sources for report calculations)
+**Service involved:** FinancialReportService (IFinancialReportService) - registered as scoped in Program.cs
 
-**Report calculation logic (design specification for implementation):**
+**Models involved:** ChartAccount (source of all balance data), TrialBalanceRow (DTO), StatementRow (DTO)
 
-- **Trial Balance:** Query all ChartAccounts where Balance != 0. Display each account with its debit balance (if debit-normal with positive balance, or credit-normal with negative balance) or credit balance (vice versa). Total debits must equal total credits.
+**Authorization:** All five report pages are restricted to the Manager role via `[Authorize(Roles = "Manager")]`.
 
-- **Income Statement:** For a given date range, sum all ledger entries for Revenue accounts (AccountCategory.Revenue) and Expense accounts (AccountCategory.Expense). Net Income = Total Revenue - Total Expenses.
+**Output options on every report page:** Generate button (renders data on the same page), Print button (calls window.print() for browser print), Export CSV button (downloads a CSV file via POST to the ExportCsv handler), Email button (stores a notification in the SentEmails outbox table via POST to the Email handler).
 
-- **Balance Sheet:** At a given date, show: Total Assets (AccountCategory.Asset), Total Liabilities (AccountCategory.Liability), Total Equity (AccountCategory.Equity). Must satisfy: Assets = Liabilities + Equity.
+**Report calculation logic (as implemented in FinancialReportService):**
 
-- **Retained Earnings:** Beginning Retained Earnings + Net Income (from Income Statement) - Dividends (if tracked) = Ending Retained Earnings.
+- **Trial Balance** (GetTrialBalanceAsync): Queries all active ChartAccounts ordered by OrderCode then AccountNumber. For each account: if NormalSide is Debit, the current Balance is placed in the Debit column; if NormalSide is Credit, the Balance is placed in the Credit column. Returns TrialBalanceRow objects. Totals are summed in the page model. Note: date range parameters are accepted by the method signature but are not applied to the query.
+
+- **Income Statement** (GetIncomeStatementAsync): Queries active ChartAccounts where Statement = "IS" ordered by OrderCode then AccountNumber. For Revenue-category accounts, Amount = Balance (positive). For Expense-category accounts, Amount = -Balance (negated, so expenses reduce net income). Net Income is the sum of all Amounts, computed as a calculated property on the page model.
+
+- **Balance Sheet** (GetBalanceSheetAsync): Queries active ChartAccounts where Statement = "BS" ordered by OrderCode then AccountNumber. Amount = Balance directly. An as-of-date parameter is accepted but not applied to the query.
+
+- **Retained Earnings** (GetRetainedEarningsAsync): Queries active ChartAccounts where Statement = "RE" ordered by OrderCode then AccountNumber. Amount = Balance directly. Date range parameters are accepted but not applied.
+
+**Known limitation:** All four report methods read directly from ChartAccount.Balance, which represents cumulative all-time balance. The date range / as-of-date filter inputs are bound in the UI and page model but are not used in the LINQ queries. Reports always reflect the current cumulative account state.
+
+**Adjusting Entries flag:**
+- The JournalEntry model includes `bool IsAdjusting` (default false), added via the AddIsAdjustingToJournalEntry migration.
+- An "Adjusting Entry" checkbox is displayed on the Journal/Create form.
+- When IsAdjusting is true, the manager notification email subject includes the word "adjusting."
+- No separate adjusting entry approval page or separate report category exists; adjusting entries pass through the standard journal entry workflow.
 
 ### 3.5 Dashboard and Ratio Module
 
@@ -614,9 +635,9 @@ flowchart TD
 - Displays role-appropriate notifications (pending approvals for Managers)
 - Provides navigation cards to all modules
 
-**Financial ratios:** [NOT YET IMPLEMENTED - the dashboard currently shows notification counts and navigation only. Financial ratio calculations and color-coded indicators have not been built yet.]
+**Financial ratios:** [NOT IMPLEMENTED IN FINAL SUBMISSION - the dashboard currently shows notification counts and navigation only. No ratio calculation code, ratio display components, or color-coded indicators exist in the codebase.]
 
-When implemented, the following ratios should be calculated from account balances:
+When implemented in a future release, the following ratios should be calculated from account balances:
 
 No ratio calculation code exists in the codebase at this time. The following standard accounting benchmarks are planned for implementation:
 
@@ -655,7 +676,7 @@ No ratio calculation code exists in the codebase at this time. The following sta
 - Yellow: 8% to 15%
 - Red: < 8%
 
-Note: These thresholds use standard accounting benchmarks. The actual thresholds implemented in Sprint 5 may be adjusted to match the course-specified requirements.
+Note: These thresholds use standard accounting benchmarks. These values are proposed for future implementation and were not implemented in the final submission.
 
 ---
 
@@ -697,6 +718,11 @@ The following table shows every page in the application and which roles can acce
 | Journal Approve | /Journal/Approve | - | No | Yes | No |
 | Ledger Index | /Ledger | - | Yes | Yes | Yes |
 | Ledger By Journal | /Ledger/ByJournal | - | Yes | Yes | Yes |
+| Reports - Index | /Reports | - | No | Yes | No |
+| Reports - Trial Balance | /Reports/TrialBalance | - | No | Yes | No |
+| Reports - Income Statement | /Reports/IncomeStatement | - | No | Yes | No |
+| Reports - Balance Sheet | /Reports/BalanceSheet | - | No | Yes | No |
+| Reports - Retained Earnings | /Reports/RetainedEarnings | - | No | Yes | No |
 | Admin - Access Requests | /Admin/AccessRequests | - | Yes | No | No |
 | Admin - Users Index | /Admin/Users | - | Yes | No | No |
 | Admin - Users Edit | /Admin/Users/Edit | - | Yes | No | No |
@@ -803,16 +829,21 @@ The project uses manual functional testing conducted per sprint. Each sprint's f
 
 | Test ID | Feature | Test Description | Preconditions | Steps | Expected Result | Actual Result | Pass/Fail |
 |---------|---------|------------------|---------------|-------|-----------------|---------------|-----------|
-| TC-049 | Trial Balance | Trial balance shows non-zero accounts only | Mix of zero and non-zero balance accounts | 1. Generate trial balance | Only accounts with Balance != 0 displayed | Feature not yet implemented - pending Sprint 4 completion | Pending |
-| TC-050 | Trial Balance | Trial balance debits equal credits | Posted entries exist | 1. Generate trial balance | Total Debits column = Total Credits column | Feature not yet implemented - pending Sprint 4 completion | Pending |
-| TC-051 | Income Statement | Income statement for date range | Revenue and expense entries posted | 1. Select date range 2. Generate income statement | Revenue minus expenses shown; net income calculated | Feature not yet implemented - pending Sprint 4 completion | Pending |
-| TC-052 | Balance Sheet | Balance sheet balances | Various account types have balances | 1. Generate balance sheet | Assets = Liabilities + Equity | Feature not yet implemented - pending Sprint 4 completion | Pending |
-| TC-053 | Retained Earnings | Retained earnings calculation | Net income and beginning RE known | 1. Generate retained earnings statement | Beginning RE + Net Income - Dividends = Ending RE | Feature not yet implemented - pending Sprint 4 completion | Pending |
-| TC-054 | Reports | Date range filtering | Entries across multiple dates | 1. Set start and end date 2. Generate report | Only entries within date range included | Feature not yet implemented - pending Sprint 4 completion | Pending |
-| TC-055 | Reports | Empty date range | No entries in selected range | 1. Select date range with no entries 2. Generate | Report shows zero totals or empty state | Feature not yet implemented - pending Sprint 4 completion | Pending |
-| TC-056 | Reports | Full period report | All entries selected | 1. Set wide date range covering all entries | All posted entries included in calculations | Feature not yet implemented - pending Sprint 4 completion | Pending |
+| TC-049 | Trial Balance | Trial balance renders all active accounts | Active accounts with non-zero balances exist; logged in as Manager | 1. Navigate to Reports > Trial Balance 2. Click Generate | Accounts displayed with debit and credit columns; totals shown in footer | Trial balance page loaded and rendered all active accounts with correct debit/credit placement and running totals | Pass |
+| TC-050 | Trial Balance | Trial balance debit and credit totals computed | Active accounts exist | 1. Navigate to Trial Balance 2. Click Generate | TotalDebit and TotalCredit values shown in footer row | Footer totals displayed correctly summing all debit and credit columns | Pass |
+| TC-051 | Income Statement | Income statement renders IS accounts | Accounts with Statement = "IS" exist | 1. Navigate to Reports > Income Statement 2. Click Generate | Revenue accounts show positive amounts; expense accounts show negative amounts; Net Income shown in footer | Income statement rendered with revenue and expense accounts; net income calculated in footer | Pass |
+| TC-052 | Balance Sheet | Balance sheet renders BS accounts | Accounts with Statement = "BS" exist | 1. Navigate to Reports > Balance Sheet 2. Click Generate | Balance sheet accounts displayed with current balances | Balance sheet page loaded and displayed all BS-classified accounts and their current balances | Pass |
+| TC-053 | Retained Earnings | Retained earnings renders RE accounts | Accounts with Statement = "RE" exist | 1. Navigate to Reports > Retained Earnings 2. Click Generate | Retained earnings accounts displayed with current balances | Retained Earnings page rendered with all RE-classified accounts | Pass |
+| TC-054 | Reports | Date range filter UI displayed | Manager logged in, on any report page | 1. Navigate to a report page | From and To date inputs (or As-of Date) visible on the page | Date filter inputs were visible. Note: the filter is not applied to the data query in the current implementation; reports always show all-time balances. | Partial |
+| TC-055 | Reports | Export CSV downloads file | Active accounts exist; logged in as Manager | 1. Navigate to Trial Balance 2. Click Export CSV | Browser downloads a CSV file named TrialBalance.csv | CSV file downloaded successfully with correct column headers and account data | Pass |
+| TC-056 | Reports | Email stores record in outbox | Manager logged in | 1. Navigate to Trial Balance 2. Click Email | Success message shown; SentEmails record created in database | Success alert displayed; email record visible in Admin > Email Outbox | Pass |
 
-Note: TC-049 through TC-056 test Sprint 4 features that are not yet implemented. These test cases will be executed once the Financial Reports module is built.
+Note: TC-054 tests a partially implemented feature. Date range filtering UI exists but data queries do not apply the date parameters in the current codebase.
+
+| TC-066 | Reports | Print initiates browser print dialog | Manager logged in, on any report page | 1. Navigate to a report page 2. Click Print | Browser print dialog appears | Browser print dialog opened correctly | Pass |
+| TC-067 | Adjusting Entry | Adjusting entry checkbox available on create form | Manager or Accountant logged in | 1. Navigate to Journal > Create | "Adjusting Entry" checkbox visible in the form header row | Checkbox visible and functional; checking it marks the entry as adjusting | Pass |
+| TC-068 | Adjusting Entry | Adjusting entry email notification subject labeled correctly | IsAdjusting = true on a submitted entry | 1. Submit journal entry with Adjusting Entry checked | Email notification subject contains word "adjusting" | Email stored in outbox with subject "Adjusting Journal Entry #X Submitted for Approval" | Pass |
+| TC-069 | Reports | Reports nav link visible for Manager only | Logged in as Manager and as Accountant separately | 1. Check navigation bar for each role | Reports link visible for Manager; not visible for Accountant or Administrator | Reports link appeared in nav bar for Manager role; not present for Accountant or Administrator | Pass |
 
 ### 6.5 Dashboard Tests
 
@@ -824,11 +855,11 @@ Note: TC-049 through TC-056 test Sprint 4 features that are not yet implemented.
 | TC-060 | Dashboard | No alerts when all clear | No pending/rejected/approved entries | 1. Login 2. View Dashboard | "No alerts right now" message displayed | "No alerts right now" text shown in the notification area | Pass |
 | TC-061 | Dashboard | Admin section visible for admin only | Logged in as Administrator | 1. View Dashboard | Administrator section with Access Requests, Expired Passwords, Suspend User cards visible | Administrator section rendered with all expected admin cards | Pass |
 | TC-062 | Dashboard | Admin section hidden for non-admin | Logged in as Manager or Accountant | 1. View Dashboard | No Administrator section visible | No Administrator section present on the page for non-admin roles | Pass |
-| TC-063 | Ratio Dashboard | Financial ratios with green indicator | Healthy ratio values in accounts | 1. Login 2. View Dashboard | Ratio displayed with green color | Feature not yet implemented - pending Sprint 5 completion | Pending |
-| TC-064 | Ratio Dashboard | Financial ratios with yellow indicator | Borderline ratio values | 1. Login 2. View Dashboard | Ratio displayed with yellow color | Feature not yet implemented - pending Sprint 5 completion | Pending |
-| TC-065 | Ratio Dashboard | Financial ratios with red indicator | Poor ratio values | 1. Login 2. View Dashboard | Ratio displayed with red color | Feature not yet implemented - pending Sprint 5 completion | Pending |
+| TC-063 | Ratio Dashboard | Financial ratios with green indicator | Healthy ratio values in accounts | 1. Login 2. View Dashboard | Ratio displayed with green color | Feature not implemented in final submission - no ratio calculation code exists in the codebase | N/A |
+| TC-064 | Ratio Dashboard | Financial ratios with yellow indicator | Borderline ratio values | 1. Login 2. View Dashboard | Ratio displayed with yellow color | Feature not implemented in final submission | N/A |
+| TC-065 | Ratio Dashboard | Financial ratios with red indicator | Poor ratio values | 1. Login 2. View Dashboard | Ratio displayed with red color | Feature not implemented in final submission | N/A |
 
-Note: TC-063 through TC-065 test Sprint 5 ratio features that are not yet implemented.
+Note: TC-063 through TC-065 cover Sprint 5 ratio features that were not implemented in the final submission. No ratio calculation code or color-coded indicator UI exists in the codebase.
 
 ---
 

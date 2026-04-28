@@ -57,9 +57,9 @@ The team chose the accounting domain because it offers rich opportunities to dem
 7. **Approval Workflow:** Implement a manager-only approval/rejection workflow for journal entries, requiring a comment on rejections, with status tracking (Pending, Approved, Rejected, Posted).
 8. **Ledger Posting:** Automatically create ledger entries when approved journal entries are posted, calculating running balances using proper accounting math (normal side impact), and updating account totals.
 9. **Event Logging:** Record every data modification across all tables with before/after JSON snapshots, user ID, timestamp, and action type for complete audit trail capability.
-10. **Financial Report Generation:** Generate trial balance, income statement, balance sheet, and retained earnings statement from ledger data with date range filtering.
-11. **Dashboard with Notifications:** Provide a role-aware dashboard showing pending approval counts, rejected entry counts, and approved-not-yet-posted counts for quick status assessment.
-12. **Financial Ratio Dashboard:** Display financial ratios on the landing page with color-coded indicators (green/yellow/red) showing organizational financial health at a glance.
+10. **Financial Report Generation:** Generate trial balance, income statement, balance sheet, and retained earnings statement from account balance data, with CSV export, browser print, and email-to-outbox options. (Partially implemented - all four report pages are functional; date range filtering UI is present but filtering logic is not applied to queries in the final submission.)
+11. **Dashboard with Notifications:** Provide a role-aware dashboard showing pending approval counts, rejected entry counts, and approved-not-yet-posted counts for quick status assessment. (Completed.)
+12. **Financial Ratio Dashboard:** Display financial ratios on the landing page with color-coded indicators (green/yellow/red) showing organizational financial health at a glance. (Deferred - not included in final submission. The notification dashboard is implemented; ratio calculations are not.)
 
 ---
 
@@ -317,6 +317,7 @@ classDiagram
         +int JournalEntryId
         +DateTime EntryDate
         +string Description
+        +bool IsAdjusting
         +JournalStatus Status
         +string ManagerComment
         +string CreatedByUserId
@@ -507,6 +508,7 @@ erDiagram
         int JournalEntryId PK
         datetime2 EntryDate
         nvarchar Description
+        bit IsAdjusting
         int Status
         nvarchar ManagerComment
         nvarchar CreatedByUserId
@@ -682,6 +684,36 @@ The following describes the primary screens of the application. Each screen is a
 - Key elements: Journal entry reference, table of affected accounts (account number, name, description, debit, credit, balance after), totals row, posted timestamp
 - Navigation: Accessed from Journal Details page
 
+**Reports - Index** (Pages/Reports/Index)
+- Purpose: Hub page listing all available financial reports with links to each report page.
+- Accessible by: Manager only
+- Key elements: Four cards - Trial Balance, Income Statement, Balance Sheet, Retained Earnings - each with an Open button
+- Navigation: Accessible from the Reports link in the navigation bar (Manager role only)
+
+**Reports - Trial Balance** (Pages/Reports/TrialBalance)
+- Purpose: Displays all active accounts with debit and credit balance columns and grand totals.
+- Accessible by: Manager only
+- Key elements: Optional date range filter (From/To), Generate button, Print button (browser print), Export CSV button, Email button (stores to outbox), data table with Account Number, Account Name, Debit, Credit columns, totals footer row
+- Navigation: Accessed from Reports Index; Back button returns to Reports Index
+
+**Reports - Income Statement** (Pages/Reports/IncomeStatement)
+- Purpose: Displays revenue and expense accounts with net income calculated in the footer.
+- Accessible by: Manager only
+- Key elements: Optional date range filter (From/To), Generate button, Print button, Export CSV button, Email button, data table with Account Number, Account Name, Subcategory, Amount columns, Net Income footer
+- Navigation: Accessed from Reports Index
+
+**Reports - Balance Sheet** (Pages/Reports/BalanceSheet)
+- Purpose: Displays all accounts classified as Balance Sheet (Statement = "BS") with their current balances.
+- Accessible by: Manager only
+- Key elements: Optional as-of date filter, Generate button, Print button, Export CSV button, Email button, data table with Account Number, Account Name, Subcategory, Amount columns
+- Navigation: Accessed from Reports Index
+
+**Reports - Retained Earnings** (Pages/Reports/RetainedEarnings)
+- Purpose: Displays accounts classified as Retained Earnings (Statement = "RE") with their current balances.
+- Accessible by: Manager only
+- Key elements: Optional date range filter (From/To), Generate button, Print button, Export CSV button, Email button, data table with Account Number, Account Name, Subcategory, Amount columns
+- Navigation: Accessed from Reports Index
+
 **Help Page** (Pages/Help/Index)
 - Purpose: Provides built-in help and guidance for using the application.
 - Accessible by: All users (including unauthenticated)
@@ -795,9 +827,9 @@ gantt
 |--------|--------|----------|--------|
 | 1 | User Interface and Authentication | Login, registration redirect, roles (Admin/Manager/Accountant), password security (complexity, expiry, history, lockout), user management (create, edit, activate, deactivate, suspend), access request workflow, email outbox, expired passwords report | Completed - March 4, 2026 |
 | 2 | Chart of Accounts | Add/edit/deactivate accounts, duplicate prevention, integer-only account numbers, search by name/number, filter by category/subcategory, event log with before/after snapshots | Completed - March 22, 2026 |
-| 3 | Journalizing and Ledger | Journal entry creation with balanced debits/credits, multi-line entries, manager approval/rejection workflow, ledger posting with running balances, post reference navigation, file attachments | In Progress - Due March 30, 2026 |
-| 4 | Adjusting Entries and Financial Reports | Adjusting entries, trial balance, income statement, balance sheet, retained earnings statement | Scheduled - Due April 13, 2026 |
-| 5 | Dashboard and Ratio Analysis | Financial ratio calculations, color-coded health indicators, role-appropriate notifications | Scheduled - Due April 20, 2026 |
+| 3 | Journalizing and Ledger | Journal entry creation with balanced debits/credits, multi-line entries, manager approval/rejection workflow, ledger posting with running balances, post reference navigation, file attachments, email notification to managers on submission | Completed - March 30, 2026 |
+| 4 | Adjusting Entries and Financial Reports | Adjusting entry flag (IsAdjusting checkbox on journal create form), trial balance, income statement, balance sheet, retained earnings - all with Print/Export CSV/Email. Gap: date range filter UI present but not applied to report queries. | Completed with partial implementation - April 14, 2026 |
+| 5 | Dashboard and Ratio Analysis | Financial ratio calculations, color-coded health indicators - not implemented. Role-appropriate notification dashboard is functional from Sprint 1. | Not implemented in final submission |
 
 ---
 
