@@ -293,19 +293,19 @@ Major functional areas of the system:
 
 ### 3.4 Adjusting Entries and Financial Reports Module
 
-**FR-079:** The system shall support adjusting entries as journal entries created at the end of an accounting period to update account balances for accrued or deferred items. [NOT YET IMPLEMENTED - adjusting entries use the same journal entry creation flow; no separate adjusting entry type has been implemented]
+**FR-079:** The system shall support adjusting entries as journal entries created at the end of an accounting period to update account balances for accrued or deferred items. [PARTIALLY IMPLEMENTED - a boolean IsAdjusting flag was added to the JournalEntry model via migration AddIsAdjustingToJournalEntry. An "Adjusting Entry" checkbox is present on the journal create form. When checked, the submission email notification subject includes the word "adjusting." No separate adjusting entry workflow, page, or reporting category exists; adjusting entries use the standard journal entry approval and posting flow.]
 
-**FR-080:** The system shall generate a Trial Balance report showing all accounts with non-zero balances, with separate debit and credit columns, and totals that must balance. [NOT YET IMPLEMENTED - no Trial Balance page exists in the codebase]
+**FR-080:** The system shall generate a Trial Balance report showing all active accounts with debit and credit balance columns, and grand totals. The report is accessible at /Reports/TrialBalance and is restricted to the Manager role.
 
-**FR-081:** The system shall generate an Income Statement report showing revenue accounts (credit normal) and expense accounts (debit normal) for a specified date range, calculating net income or net loss. [NOT YET IMPLEMENTED - no Income Statement page exists]
+**FR-081:** The system shall generate an Income Statement report showing accounts with Statement = "IS" (Income Statement). Revenue accounts display positive amounts; Expense accounts display negative amounts. The Net Income total is displayed in the report footer. Accessible at /Reports/IncomeStatement (Manager only).
 
-**FR-082:** The system shall generate a Balance Sheet report showing assets, liabilities, and equity at a specified date, verifying that assets equal liabilities plus equity. [NOT YET IMPLEMENTED - no Balance Sheet page exists]
+**FR-082:** The system shall generate a Balance Sheet report showing all accounts with Statement = "BS" (Balance Sheet). Accounts are ordered by OrderCode and AccountNumber. Accessible at /Reports/BalanceSheet (Manager only). An as-of-date filter is available in the UI but does not currently filter the query data.
 
-**FR-083:** The system shall generate a Retained Earnings Statement showing beginning retained earnings plus net income minus dividends for a specified period. [NOT YET IMPLEMENTED - no Retained Earnings page exists]
+**FR-083:** The system shall generate a Retained Earnings Statement showing accounts with Statement = "RE" (Retained Earnings). Accessible at /Reports/RetainedEarnings (Manager only).
 
-**FR-084:** All financial reports shall support date range selection to generate reports for any specified period. [NOT YET IMPLEMENTED]
+**FR-084:** All financial report pages include date range (From/To) or as-of-date filter inputs in the UI. [NOT IMPLEMENTED IN FINAL SUBMISSION - the date parameters are bound in page models and passed to FinancialReportService methods, but the service queries do not apply them to the database queries. Reports always reflect all-time account balances regardless of the selected date range.]
 
-**FR-085:** Financial reports shall provide options to generate, view, save, email, and print. [NOT YET IMPLEMENTED]
+**FR-085:** Financial reports provide the following output options: Generate (click Generate button to render the report), Print (browser print via window.print()), Export CSV (downloads a formatted CSV file), and Email (stores the report notification in the SentEmails outbox table). A dedicated save-to-server or PDF export option is not implemented.
 
 ### 3.5 Dashboard and Ratio Analysis Module
 
@@ -319,7 +319,9 @@ Major functional areas of the system:
 
 **FR-090:** The dashboard shall include account management links: Manage Account, Forgot Password, and Logout.
 
-**FR-091:** The system shall calculate and display financial ratios on the landing page with color-coded indicators: green (healthy), yellow (borderline), red (out of range). [NOT YET IMPLEMENTED - the dashboard exists with notifications but does not yet calculate or display financial ratios]
+**FR-091:** The system shall calculate and display financial ratios on the landing page with color-coded indicators: green (healthy), yellow (borderline), red (out of range). [NOT IMPLEMENTED IN FINAL SUBMISSION - the dashboard pages (Index and Dashboard) display role-aware notification counts only. No ratio calculation code, ratio display components, or color-coded indicators exist in the codebase.]
+
+**FR-092:** When a journal entry is submitted for approval, the system shall send an email notification to all users assigned the Manager role. The notification is stored in the SentEmails outbox table. The email subject identifies the entry as either a standard or adjusting journal entry based on the IsAdjusting flag.
 
 ---
 
@@ -441,6 +443,11 @@ Major functional areas of the system:
 | Admin - Event Log View | /Admin/EventLogs/View/{id} | Administrator, Manager | View single event log detail with JSON |
 | Admin - Email Outbox | /Admin/EmailOutbox | Administrator | List all sent emails with search/filter |
 | Admin - Email Outbox Details | /Admin/EmailOutboxDetails/{id} | Administrator | View full email content |
+| Reports - Index | /Reports | Manager | Hub page with links to all four financial reports |
+| Reports - Trial Balance | /Reports/TrialBalance | Manager | Trial balance with debit/credit columns, totals, Print/Export CSV/Email |
+| Reports - Income Statement | /Reports/IncomeStatement | Manager | Income statement with net income footer, Print/Export CSV/Email |
+| Reports - Balance Sheet | /Reports/BalanceSheet | Manager | Balance sheet with as-of date filter, Print/Export CSV/Email |
+| Reports - Retained Earnings | /Reports/RetainedEarnings | Manager | Retained earnings statement, Print/Export CSV/Email |
 | Help | /Help | All (including unauthenticated) | Built-in help and guidance |
 | Privacy | /Privacy | All (including unauthenticated) | Privacy policy page |
 | Error | /Error | All | Error display with request ID |

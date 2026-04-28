@@ -304,7 +304,7 @@ You can also view chart-of-accounts-specific logs by navigating to **Chart of Ac
 
 ### 3.5 Viewing Reports
 
-As an Administrator, you have access to all areas of the system including the Chart of Accounts, Journal Entries, Ledger, Event Logs, Email Outbox, and all user management features. Financial reports (Trial Balance, Income Statement, Balance Sheet, Retained Earnings) are accessible through the reports section when implemented.
+As an Administrator, you have access to all areas of the system including the Chart of Accounts, Journal Entries, Ledger, Event Logs, Email Outbox, and all user management features. Financial reports (Trial Balance, Income Statement, Balance Sheet, and Retained Earnings) are accessible through the **Reports** link in the navigation bar, which is visible to users with the Manager role. Administrators do not currently have direct access to the Reports pages. To view financial report data, an Administrator can review the Chart of Accounts page which shows current balances for each account.
 
 ---
 
@@ -402,37 +402,86 @@ Each ledger entry includes a **Post Reference** number (sometimes shown as "PR" 
 
 ### 4.4 Generating Financial Reports
 
+Financial reports are accessible from the **Reports** link in the navigation bar. This link is visible only to users with the Manager role. Click **Reports** to open the Reports hub, which shows four cards - one for each available report. Click the **Open** button on a card to navigate to that report.
+
+Each report page has the same set of action buttons:
+- **Generate** - Renders the report data on screen using current account balances.
+- **Print** - Opens the browser's print dialog so you can print the report on paper or save it as a PDF using your browser's built-in PDF printing feature.
+- **Export CSV** - Downloads the report as a spreadsheet-compatible CSV file that can be opened in Microsoft Excel or Google Sheets.
+- **Email** - Stores the report notification in the system email outbox. Note: this records the email in the system log rather than sending it to an external inbox.
+- **Back** - Returns to the Reports hub.
+
+**Important note about date filters:** Each report page shows a date range input (From and To dates, or an As-of Date for the Balance Sheet). You may enter dates in these fields, but the current version of the application displays all-time account balances regardless of the dates entered. The date filter inputs are provided for future use.
+
 #### 4.4.1 Trial Balance
 
-A Trial Balance lists every account that has a non-zero balance, showing each account's debit or credit balance. The total of all debits must equal the total of all credits. This report is used to verify the books are in balance before preparing other financial statements.
+A Trial Balance lists every active account, showing each account's balance in either the Debit or Credit column depending on the account's normal side. The totals at the bottom of the table show the sum of all debit balances and the sum of all credit balances. A balanced set of books will show equal debit and credit totals.
 
-**Note:** The financial reporting module is currently under active development as part of Sprint 4. Detailed step-by-step instructions will be added upon completion of this module.
+**Steps:**
+1. Click **Reports** in the navigation bar.
+2. Click **Open** on the Trial Balance card.
+3. Click **Generate** to display the report.
+4. Review the table: each row shows an account number, account name, and the balance in either the Debit or Credit column.
+5. Check the **Totals** row at the bottom of the table to verify the debit and credit totals.
+6. To print the report, click **Print**. Your browser's print dialog will open.
+7. To download the data, click **Export CSV**. A file named TrialBalance.csv will download to your computer.
+8. To record the report in the email outbox, click **Email**. A confirmation message will appear.
 
 #### 4.4.2 Income Statement
 
-The Income Statement (also called the Profit and Loss statement) shows the organization's revenue and expenses over a period of time. Revenue minus expenses equals **Net Income** (profit) or **Net Loss**.
+The Income Statement (also called the Profit and Loss statement) shows the organization's revenue and expenses. Revenue amounts are shown as positive values. Expense amounts are shown as negative values (because expenses reduce net income). The **Net Income** total at the bottom of the table is the sum of all amounts - a positive value means profit; a negative value means a net loss.
 
-**Note:** The financial reporting module is currently under active development as part of Sprint 4. Detailed step-by-step instructions will be added upon completion of this module.
+**Steps:**
+1. Click **Reports** in the navigation bar.
+2. Click **Open** on the Income Statement card.
+3. Click **Generate** to display the report.
+4. Review the table: Revenue accounts appear with positive amounts; Expense accounts appear with negative amounts.
+5. The **Net Income** row in the footer shows the combined total (revenue minus expenses).
+6. Use the **Print**, **Export CSV**, or **Email** buttons as needed.
+
+**Reading the columns:**
+- **Account #** - The account number from the Chart of Accounts
+- **Account Name** - The account name
+- **Subcategory** - The account's subcategory (e.g., Operating Revenue, Cost of Goods Sold)
+- **Amount** - The account's net balance contribution to the income statement
 
 #### 4.4.3 Balance Sheet
 
-The Balance Sheet shows what the organization owns (assets), what it owes (liabilities), and the owner's share (equity) at a specific point in time. The fundamental equation is: **Assets = Liabilities + Equity**.
+The Balance Sheet shows what the organization owns (assets), what it owes (liabilities), and the owner's share (equity) at a specific point in time. All accounts with a Statement type of "BS" (Balance Sheet) are included.
 
-**Note:** The financial reporting module is currently under active development as part of Sprint 4. Detailed step-by-step instructions will be added upon completion of this module.
+**Steps:**
+1. Click **Reports** in the navigation bar.
+2. Click **Open** on the Balance Sheet card.
+3. Click **Generate** to display the report.
+4. Review the table showing all Balance Sheet accounts grouped by subcategory.
+5. Use the **Print**, **Export CSV**, or **Email** buttons as needed.
+
+**Reading the report:** Each row shows an account's current balance. Total assets should equal total liabilities plus total equity. If the organization has set up subcategories correctly, accounts will be grouped by type (Current Assets, Fixed Assets, Current Liabilities, Long-term Liabilities, Equity, etc.).
 
 #### 4.4.4 Retained Earnings Statement
 
-The Retained Earnings Statement shows how the organization's retained earnings changed during a period: **Beginning Retained Earnings + Net Income - Dividends = Ending Retained Earnings**.
+The Retained Earnings Statement shows accounts that track the cumulative profits retained in the business. Accounts with a Statement type of "RE" (Retained Earnings) are included.
 
-**Note:** The financial reporting module is currently under active development as part of Sprint 4. Detailed step-by-step instructions will be added upon completion of this module.
+**Steps:**
+1. Click **Reports** in the navigation bar.
+2. Click **Open** on the Retained Earnings card.
+3. Click **Generate** to display the report.
+4. Review the table of retained earnings accounts and their balances.
+5. Use the **Print**, **Export CSV**, or **Email** buttons as needed.
 
 #### 4.4.5 Selecting a Date Range for Reports
 
-**Note:** The financial reporting module is currently under active development as part of Sprint 4. Each report will support date range selection to generate results for a specific period.
+Each report page includes date range inputs (From and To, or an As-of Date). These fields are available on the form but do not currently filter the report data. All reports display current account balances regardless of the dates entered. This is a known limitation of the current version.
 
 #### 4.4.6 Saving, Printing, or Emailing a Report
 
-**Note:** Save, print, and email functionality for financial reports is scheduled for Sprint 4 completion. Instructions will be added here once these features are available.
+**To print:** Click the **Print** button on any report page. Your browser's print dialog will open. Select a printer or choose "Save as PDF" in your browser's print options to save a PDF copy.
+
+**To export as a spreadsheet:** Click **Export CSV** on any report page. Your browser will download a CSV file (for example, TrialBalance.csv or IncomeStatement.csv). Open this file in Microsoft Excel, Google Sheets, or any spreadsheet application to view and format the data.
+
+**To email:** Click **Email** on any report page. A success message will confirm the action. The email is stored in the system's Email Outbox (not sent externally). An Administrator can view the stored email by navigating to Admin > Email Outbox.
+
+**There is no separate "Save" button** - use Export CSV to save report data to your computer, or use your browser's print-to-PDF feature to save a formatted version.
 
 ---
 
@@ -570,7 +619,7 @@ The Dashboard shows different information depending on your role:
 
 Financial ratios are calculations that measure the financial health of the organization. They take numbers from the financial statements (balance sheet and income statement) and compare them to produce meaningful indicators.
 
-**Note:** The ratio analysis dashboard is scheduled for completion in Sprint 5. A full description of each financial ratio, its formula, and its interpretation will be added to this section upon completion. The dashboard will display ratios with color-coded health indicators (green, yellow, red) based on standard accounting benchmarks.
+**Note:** The ratio analysis dashboard was not completed in the current version of the application. The dashboard pages display notification counts and navigation links only. No financial ratios, color-coded indicators, or ratio calculations are currently available in the system. This section will be updated if the feature is added in a future release.
 
 ### 6.3 Color-Coded Indicators
 
@@ -582,7 +631,7 @@ The dashboard uses three colors to quickly communicate the health of each financ
 
 ### 6.4 Financial Ratios Reference
 
-The following ratios are planned for the dashboard. The ratio analysis feature is scheduled for Sprint 5 implementation. These descriptions use standard accounting benchmarks; the actual thresholds may be adjusted during implementation.
+The ratio analysis feature was not implemented in the current version of the application. The ratio reference below describes the planned ratios for documentation purposes. No ratio calculations or color-coded indicators exist in the system at this time. This section will be updated if the feature is added in a future release.
 
 **Current Ratio**
 - What it measures: Whether the organization has enough short-term assets to cover its short-term debts. A higher number means more ability to pay bills.
@@ -633,8 +682,6 @@ The following ratios are planned for the dashboard. The ratio analysis feature i
 - Warning (Yellow): 8% to 15%
 - Needs Attention (Red): Below 8%
 
-Note: These thresholds use standard accounting benchmarks. The exact values implemented in the application may be adjusted based on course requirements during Sprint 5 development.
-
 ### 6.5 Notifications Section
 
 The notification section at the top of the Dashboard shows:
@@ -669,7 +716,11 @@ The notification section at the top of the Dashboard shows:
 | Did not receive password reset email | Email is stored in the system outbox, not sent externally | Contact your Administrator to look up the reset link in the Email Outbox. In the current system, emails are stored in the database rather than sent via external email. |
 | Password rejected when changing | New password does not meet requirements | Ensure your password is at least 8 characters, starts with a letter, contains a digit and a special character, and is not one of your last 5 passwords. |
 | Changes to chart of accounts not appearing | Page needs to be refreshed | Click the Chart of Accounts link again or refresh the page in your browser. |
-| [FILL IN: Other issues discovered during testing] | | |
+| Reports menu not visible | Logged in as Accountant or Administrator | The Reports link is only visible to users with the Manager role. Accountants and Administrators do not have access to the financial report pages. Contact your Administrator if you believe your role should be changed. |
+| Report shows no rows | No active accounts exist with the correct Statement type | Ensure the Chart of Accounts has active accounts with the correct Statement field (IS, BS, or RE) for the report you are generating. Contact your Administrator to set or update account Statement values. |
+| Date filter does not change report results | Known limitation of current version | The date range inputs are visible but do not currently filter the data. The report always shows current account balances. This is a known gap in the current version. |
+| CSV file opens with incorrect formatting | CSV opened without specifying delimiter | Open the CSV file in Microsoft Excel using the Data > From Text/CSV import option, or in Google Sheets using File > Import. This ensures the column separators are recognized correctly. |
+| Email button shows success but no email received | Email is stored in system outbox only | Emails are not sent externally. They are stored in the system database. Contact your Administrator to view the email content in Admin > Email Outbox. |
 
 ---
 
@@ -701,6 +752,14 @@ The notification section at the top of the Dashboard shows:
 | Active / Inactive | Whether an account or user is currently in use (active) or has been turned off (inactive/deactivated). |
 | Suspension | A temporary block on a user account that prevents login between a start date and end date, after which access is automatically restored. |
 | Password Expiration | A security feature that requires users to change their password every 90 days to maintain account security. |
+| Financial Reports | Standardized summaries of an organization's financial activity generated from account balances. The system supports Trial Balance, Income Statement, Balance Sheet, and Retained Earnings reports. |
+| Trial Balance | A report listing all active accounts with their current balances placed in either a Debit or Credit column, used to verify that the books are in balance. |
+| Income Statement | A financial report showing all revenue and expense account balances, with Net Income calculated as revenue minus expenses. Also called the Profit and Loss statement. |
+| Balance Sheet | A financial report showing asset, liability, and equity account balances at a point in time. A healthy balance sheet has assets equal to liabilities plus equity. |
+| Retained Earnings | The cumulative profits that the organization has kept rather than distributed. Displayed on the Retained Earnings Statement. |
+| Adjusting Entry | A journal entry marked as an end-of-period adjustment by checking the "Adjusting Entry" checkbox on the journal create form. Adjusting entries follow the same approval and posting process as regular journal entries. |
+| Export CSV | A feature on each report page that downloads the report data as a comma-separated values file that can be opened in spreadsheet software such as Microsoft Excel. |
+| Statement Type | A field on each Chart of Accounts entry (IS, BS, or RE) that determines which financial report the account appears on. IS = Income Statement, BS = Balance Sheet, RE = Retained Earnings. |
 
 ---
 

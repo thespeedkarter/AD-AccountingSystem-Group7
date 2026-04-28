@@ -93,7 +93,7 @@ The project follows an Agile/Scrum lifecycle with five sprints. Each sprint targ
   - Administrator: send email to any user (stored in database outbox)
   - Email outbox system (DbEmailSender stores all emails in SentEmails table)
   - Logged-in username displayed on all pages (via _LoginPartial)
-- **Definition of Done:** All three user types can log in; administrator can create and manage users via Access Request workflow; password policies are enforced; lockout functions correctly; password reset via security questions works end-to-end.
+- **Definition of Done (achieved):** All three user types logged in successfully. Administrators created and managed users through the Access Request workflow. Password policies (complexity, expiry, history, lockout) were enforced. Account lockout after 3 failures and 30-minute unlock functioned correctly. Password reset via security question answered worked end-to-end.
 
 #### Sprint 2 - Chart of Accounts Module
 
@@ -112,7 +112,7 @@ The project follows an Agile/Scrum lifecycle with five sprints. Each sprint targ
   - Event log stores before and after JSON snapshots with user ID and timestamp
   - Chart of Accounts event log view page (filtered to ChartAccounts table)
   - Administrator has full CRUD; Manager and Accountant have view-only access
-- **Definition of Done:** Administrator can add, edit, deactivate, and reactivate accounts; all validation rules enforced; duplicate detection works; event log captures all changes with before/after snapshots; Manager/Accountant can view accounts but not modify.
+- **Definition of Done (achieved):** Administrators added, edited, deactivated, and reactivated accounts. All validation rules (duplicate number, duplicate name, balance check on deactivation) were enforced. Event log captured all chart of accounts changes with full before/after JSON snapshots. Managers and Accountants could view accounts in read-only mode.
 
 #### Sprint 3 - Journalizing and Ledger Module
 
@@ -141,7 +141,7 @@ The project follows an Agile/Scrum lifecycle with five sprints. Each sprint targ
   - 25 MB maximum file upload size
   - Event logging for all posting and approval actions
   - Journal entry list with status, date, and search filtering
-- **Definition of Done:** Accountants and Managers can create balanced journal entries; Managers can approve/reject with comments; approved entries can be posted to ledger; ledger shows running balances; post reference links work; file attachments upload and display correctly.
+- **Definition of Done (achieved):** Accountants and Managers could create balanced journal entries. Managers approved and rejected entries with required comments. Approved entries were posted to the ledger via a database transaction, with running balances calculated by AccountingMath.SignedImpact(). Post reference links navigated to source journal entries. File attachments uploaded and displayed correctly. Email notifications were sent to all Managers in the system outbox when a journal entry was submitted for approval.
 
 #### Sprint 4 - Adjusting Entries and Financial Reports
 
@@ -154,7 +154,7 @@ The project follows an Agile/Scrum lifecycle with five sprints. Each sprint targ
   - Retained earnings statement (beginning RE + net income - dividends)
   - Date range selection for all reports
   - Generate, view, save, email, and print options for reports
-- **Definition of Done:** All financial reports generate correctly for any date range; adjusting entries flow through to reports; trial balance debits equal credits; balance sheet balances.
+- **Definition of Done (achieved with gap):** All four financial report pages (Trial Balance, Income Statement, Balance Sheet, Retained Earnings) were implemented and accessible to Managers via the Reports navigation link. Each report supports browser print, CSV export, and email-to-outbox. An IsAdjusting flag was added to the JournalEntry model and appears as an "Adjusting Entry" checkbox on the journal create form. Gap note: date range filter inputs (From/To, As-of Date) are displayed in the UI and passed to service methods, but the underlying queries do not apply them - all reports reflect all-time account balances regardless of selected dates.
 
 #### Sprint 5 - Dashboard and Ratio Analysis
 
@@ -165,26 +165,26 @@ The project follows an Agile/Scrum lifecycle with five sprints. Each sprint targ
   - Role-appropriate navigation buttons on landing page
   - Notification section for pending approvals and other alerts
   - Consistent visual design with rest of application
-- **Definition of Done:** Dashboard displays all required ratios with green/yellow/red indicators; notifications show relevant alerts per role; landing page provides quick access to role-appropriate features.
+- **Definition of Done (not achieved):** The notification dashboard (pending/rejected/approved entry counts, role-specific alerts) was fully implemented in Sprint 1 and remains functional. Financial ratio calculations, color-coded indicators, and a ratio display section were not implemented in the final submission. Gap note: No ratio calculation code exists in the codebase. The dashboard pages (Index.cshtml.cs and Dashboard.cshtml.cs) show status counts only.
 
 ### 3.3 Risk Management
 
 | Risk ID | Risk Description | Probability | Impact | Mitigation Strategy |
 |---------|------------------|-------------|--------|---------------------|
-| R-001 | Team member unavailability during a critical sprint | Medium | High | Document all work thoroughly so any team member can pick up any task; maintain clear code organization and comments |
-| R-002 | Database incompatibility between Windows (SQL Server) and macOS (SQLite) | High | Medium | Use EnsureCreated() for local development; document Mac-specific setup steps; keep database schema compatible with both providers |
-| R-003 | Scope creep beyond sprint requirements | Medium | Medium | Strictly follow the sprint requirements list; no feature additions without full team agreement; defer nice-to-have features to later sprints |
-| R-004 | Integration failures between modules across sprints | Medium | High | Run full compilation check after every feature addition; test cross-module workflows after each sprint completion |
-| R-005 | EF Core migration conflicts when multiple team members modify schema | Medium | Medium | Coordinate all schema changes as a team; only one person generates migrations at a time; pin dotnet-ef tool to version 8.0.x |
-| R-006 | Loss of work due to missing or incomplete git commits | Low | High | Commit after every working feature; push to GitHub at least daily; write descriptive commit messages |
-| R-007 | Misunderstanding of accounting domain requirements | Medium | High | Cross-reference sprint requirements document regularly; consult accounting resources when implementing financial calculations |
-| R-008 | Password/security feature complexity causes delays | Medium | Medium | Use ASP.NET Identity's built-in features wherever possible; implement custom validators (PasswordHistoryValidator, StartsWithLetterPasswordValidator) as separate injectable services |
-| R-009 | File upload functionality introduces security vulnerabilities | Low | High | Restrict allowed file extensions; generate random stored filenames; enforce maximum file size (25 MB); store uploads outside web-accessible paths when possible |
-| R-008 | Cross-platform database differences causing inconsistent behavior | High | Medium | Maintain separate local dev documentation; use feature flags or conditional logic where SQL Server and SQLite behave differently |
-| R-009 | Incomplete sprint features affecting downstream sprints | Medium | High | Complete and verify each sprint before beginning the next; document any deferred items explicitly |
-| R-010 | Email functionality unavailable in development environment | Medium | Low | Use a database-backed stub email sender for development; configure real SMTP only for production |
-| R-011 | Financial calculation errors in reports or ratio analysis | Low | High | Cross-reference all calculations against course-provided solved examples before marking as complete |
-| R-012 | Application URL or hosting instability during grading period | Low | High | Document backup access method; test the application URL before each submission deadline |
+| R-001 | Team member unavailability during a critical sprint | Medium | High | Document all work thoroughly so any team member can pick up any task; maintain clear code organization and comments. (Did not materialize significantly.) |
+| R-002 | Database incompatibility between Windows (SQL Server) and macOS (SQLite) | High | Medium | Use EnsureCreated() for local development; document Mac-specific setup steps; keep database schema compatible with both providers. (Materialized - resolved by conditional database provider registration in Program.cs and git skip-worktree for local settings.) |
+| R-003 | Scope creep beyond sprint requirements | Medium | Medium | Strictly follow the sprint requirements list; no feature additions without full team agreement; defer nice-to-have features to later sprints. (Did not materialize.) |
+| R-004 | Integration failures between modules across sprints | Medium | High | Run full compilation check after every feature addition; test cross-module workflows after each sprint completion. (Did not materialize - all modules integrated cleanly.) |
+| R-005 | EF Core migration conflicts when multiple team members modify schema | Medium | Medium | Coordinate all schema changes as a team; only one person generates migrations at a time; pin dotnet-ef tool to version 8.0.x. (Did not materialize - migration discipline maintained.) |
+| R-006 | Loss of work due to missing or incomplete git commits | Low | High | Commit after every working feature; push to GitHub at least daily; write descriptive commit messages. (Did not materialize.) |
+| R-007 | Misunderstanding of accounting domain requirements | Medium | High | Cross-reference sprint requirements document regularly; consult accounting resources when implementing financial calculations. (Partially materialized - report date range filtering was implemented in UI but not applied to queries; noted as a known gap.) |
+| R-008 | Password/security feature complexity causes delays | Medium | Medium | Use ASP.NET Identity's built-in features wherever possible; implement custom validators (PasswordHistoryValidator, StartsWithLetterPasswordValidator) as separate injectable services. (Did not materialize - delivered on schedule.) |
+| R-009 | File upload functionality introduces security vulnerabilities | Low | High | Restrict allowed file extensions; generate random stored filenames; enforce maximum file size (25 MB); store uploads outside web-accessible paths when possible. (Did not materialize - all mitigations implemented.) |
+| R-010 | Cross-platform database differences causing inconsistent behavior | High | Medium | Maintain separate local dev documentation; use feature flags or conditional logic where SQL Server and SQLite behave differently. (Materialized - resolved via conditional provider logic.) |
+| R-011 | Incomplete sprint features affecting downstream sprints | Medium | High | Complete and verify each sprint before beginning the next; document any deferred items explicitly. (Partially materialized - Sprint 5 ratio features were not completed; documented as a gap.) |
+| R-012 | Email functionality unavailable in development environment | Medium | Low | Use a database-backed stub email sender for development; configure real SMTP only for production. (Did not materialize as a blocker - DbEmailSender outbox pattern used throughout.) |
+| R-013 | Financial calculation errors in reports or ratio analysis | Low | High | Cross-reference all calculations against course-provided solved examples before marking as complete. (Did not fully materialize for reports; ratio analysis was deferred.) |
+| R-014 | Application URL or hosting instability during grading period | Low | High | Document backup access method; test the application URL before each submission deadline. (Outcome: Cloudflare tunnel used for hosting; backup method documented.) |
 
 ### 3.4 Communication Plan
 
@@ -261,108 +261,109 @@ Agile/Scrum with sprint-based incremental delivery. Each of the five sprints tar
 
 ### Sprint 1 - User Interface and Authentication Module
 
-- Task 1.1: Scaffold ASP.NET Identity pages (Login, Register, Logout, ForgotPassword, ResetPassword, ChangePassword)
-- Task 1.2: Create three roles (Administrator, Manager, Accountant) in Program.cs startup seed
-- Task 1.3: Seed default administrator account (admin@local.test)
-- Task 1.4: Configure password policy (min 8 chars, digit, special char, starts with letter)
-- Task 1.5: Implement StartsWithLetterPasswordValidator custom validator
-- Task 1.6: Implement PasswordHistoryValidator to prevent reuse of last 5 passwords
-- Task 1.7: Create PasswordHistory model and migration
-- Task 1.8: Create UserSecurity model with password expiration (90 days), suspension fields, security question/answer
-- Task 1.9: Configure account lockout (3 attempts, 30-minute duration) in Identity options
-- Task 1.10: Add login checks for IsActive, suspension window, and password expiry
-- Task 1.11: Add 3-day password expiry warning on login
-- Task 1.12: Create AccessRequest model and public RequestAccess page
-- Task 1.13: Create Admin/AccessRequests page with approve/reject workflow
-- Task 1.14: Implement username auto-generation (first initial + last name + MMYY)
-- Task 1.15: Create Admin/Users/Index page with search, role filter, and status display
-- Task 1.16: Create Admin/Users/Edit page for role assignment and suspension
-- Task 1.17: Create Admin/EditUser page with comprehensive user management (role, security, email)
-- Task 1.18: Create Admin/ExpiredPasswords page listing users with expired passwords
-- Task 1.19: Create Admin/SuspendUser page for suspension/deactivation
-- Task 1.20: Implement DbEmailSender service (stores emails in SentEmails table)
-- Task 1.21: Create Admin/EmailOutbox and EmailOutboxDetails pages
-- Task 1.22: Create SecurityAnswerHasher (SHA-256 hashing for security answers)
-- Task 1.23: Implement ForgotPassword flow with security question verification
-- Task 1.24: Create custom ForgotPasswordCustom page under Pages/Account
-- Task 1.25: Create _LoginPartial showing logged-in username and logout button
-- Task 1.26: Create _Layout.cshtml with navigation bar, role-based menu items, and brand
+- [DONE] Task 1.1: Scaffold ASP.NET Identity pages (Login, Register, Logout, ForgotPassword, ResetPassword, ChangePassword)
+- [DONE] Task 1.2: Create three roles (Administrator, Manager, Accountant) in Program.cs startup seed
+- [DONE] Task 1.3: Seed default administrator account (admin@local.test)
+- [DONE] Task 1.4: Configure password policy (min 8 chars, digit, special char, starts with letter)
+- [DONE] Task 1.5: Implement StartsWithLetterPasswordValidator custom validator
+- [DONE] Task 1.6: Implement PasswordHistoryValidator to prevent reuse of last 5 passwords
+- [DONE] Task 1.7: Create PasswordHistory model and migration
+- [DONE] Task 1.8: Create UserSecurity model with password expiration (90 days), suspension fields, security question/answer
+- [DONE] Task 1.9: Configure account lockout (3 attempts, 30-minute duration) in Identity options
+- [DONE] Task 1.10: Add login checks for IsActive, suspension window, and password expiry
+- [DONE] Task 1.11: Add 3-day password expiry warning on login
+- [DONE] Task 1.12: Create AccessRequest model and public RequestAccess page
+- [DONE] Task 1.13: Create Admin/AccessRequests page with approve/reject workflow
+- [DONE] Task 1.14: Implement username auto-generation (first initial + last name + MMYY)
+- [DONE] Task 1.15: Create Admin/Users/Index page with search, role filter, and status display
+- [DONE] Task 1.16: Create Admin/Users/Edit page for role assignment and suspension
+- [DONE] Task 1.17: Create Admin/EditUser page with comprehensive user management (role, security, email)
+- [DONE] Task 1.18: Create Admin/ExpiredPasswords page listing users with expired passwords
+- [DONE] Task 1.19: Create Admin/SuspendUser page for suspension/deactivation
+- [DONE] Task 1.20: Implement DbEmailSender service (stores emails in SentEmails table)
+- [DONE] Task 1.21: Create Admin/EmailOutbox and EmailOutboxDetails pages
+- [DONE] Task 1.22: Create SecurityAnswerHasher (SHA-256 hashing for security answers)
+- [DONE] Task 1.23: Implement ForgotPassword flow with security question verification
+- [DONE] Task 1.24: Create custom ForgotPasswordCustom page under Pages/Account
+- [DONE] Task 1.25: Create _LoginPartial showing logged-in username and logout button
+- [DONE] Task 1.26: Create _Layout.cshtml with navigation bar, role-based menu items, and brand
 
 ### Sprint 2 - Chart of Accounts Module
 
-- Task 2.1: Create ChartAccount model with all fields (name, number, description, normal side, category, subcategory, initial balance, debit, credit, balance, order code, statement, comment, is active)
-- Task 2.2: Create NormalSide enum (Debit, Credit) and AccountCategory enum (Asset, Liability, Equity, Revenue, Expense)
-- Task 2.3: Generate EF Core migration for ChartAccounts table
-- Task 2.4: Create ChartOfAccounts/Index page with account listing
-- Task 2.5: Create ChartOfAccounts/Create page (Administrator only)
-- Task 2.6: Implement duplicate account number validation
-- Task 2.7: Implement duplicate account name validation
-- Task 2.8: Create ChartOfAccounts/Edit page (Administrator only)
-- Task 2.9: Implement deactivation with balance-check constraint (balance must be zero)
-- Task 2.10: Implement reactivation of previously deactivated accounts
-- Task 2.11: Add search functionality (by account number or name)
-- Task 2.12: Add filter functionality (by category, subcategory, active/inactive status)
-- Task 2.13: Create EventLog model and EventAction enum
-- Task 2.14: Create EventLogger service for recording before/after JSON snapshots
-- Task 2.15: Generate EF Core migration for EventLogs table
-- Task 2.16: Integrate event logging into ChartOfAccounts Create, Edit, Deactivate, and Activate actions
-- Task 2.17: Create ChartOfAccounts/Logs page filtered to ChartAccounts table
-- Task 2.18: Create Admin/EventLogs/Index page with pagination and filtering
-- Task 2.19: Create Admin/EventLogs/View page with formatted JSON display
-- Task 2.20: Set IsAdmin property on ChartOfAccounts/Index to control Add/Edit button visibility
+- [DONE] Task 2.1: Create ChartAccount model with all fields (name, number, description, normal side, category, subcategory, initial balance, debit, credit, balance, order code, statement, comment, is active)
+- [DONE] Task 2.2: Create NormalSide enum (Debit, Credit) and AccountCategory enum (Asset, Liability, Equity, Revenue, Expense)
+- [DONE] Task 2.3: Generate EF Core migration for ChartAccounts table
+- [DONE] Task 2.4: Create ChartOfAccounts/Index page with account listing
+- [DONE] Task 2.5: Create ChartOfAccounts/Create page (Administrator only)
+- [DONE] Task 2.6: Implement duplicate account number validation
+- [DONE] Task 2.7: Implement duplicate account name validation
+- [DONE] Task 2.8: Create ChartOfAccounts/Edit page (Administrator only)
+- [DONE] Task 2.9: Implement deactivation with balance-check constraint (balance must be zero)
+- [DONE] Task 2.10: Implement reactivation of previously deactivated accounts
+- [DONE] Task 2.11: Add search functionality (by account number or name)
+- [DONE] Task 2.12: Add filter functionality (by category, subcategory, active/inactive status)
+- [DONE] Task 2.13: Create EventLog model and EventAction enum
+- [DONE] Task 2.14: Create EventLogger service for recording before/after JSON snapshots
+- [DONE] Task 2.15: Generate EF Core migration for EventLogs table
+- [DONE] Task 2.16: Integrate event logging into ChartOfAccounts Create, Edit, Deactivate, and Activate actions
+- [DONE] Task 2.17: Create ChartOfAccounts/Logs page filtered to ChartAccounts table
+- [DONE] Task 2.18: Create Admin/EventLogs/Index page with pagination and filtering
+- [DONE] Task 2.19: Create Admin/EventLogs/View page with formatted JSON display
+- [DONE] Task 2.20: Set IsAdmin property on ChartOfAccounts/Index to control Add/Edit button visibility
 
 ### Sprint 3 - Journalizing and Ledger Module
 
-- Task 3.1: Create JournalEntry model with status workflow (Pending, Approved, Rejected, Posted)
-- Task 3.2: Create JournalLine model with debit/credit amounts and account reference
-- Task 3.3: Create JournalAttachment model for file metadata storage
-- Task 3.4: Create LedgerEntry model with running balance tracking
-- Task 3.5: Generate EF Core migration for journal and ledger tables
-- Task 3.6: Create Journal/Create page with dynamic multi-line form
-- Task 3.7: Implement debit/credit balance validation (totals must match)
-- Task 3.8: Implement validation for at least one debit and one credit line
-- Task 3.9: Implement validation preventing both debit and credit on same line
-- Task 3.10: Implement validation ensuring all referenced accounts are active
-- Task 3.11: Implement zero-amount line filtering before save
-- Task 3.12: Create Journal/Index page with status, date, and search filtering
-- Task 3.13: Create Journal/Details page with lines, totals, and attachment list
-- Task 3.14: Create Journal/Approve page (Manager only) with approve/reject actions
-- Task 3.15: Implement rejection with required manager comment
-- Task 3.16: Create AccountingMath.SignedImpact() for proper debit/credit balance calculation
-- Task 3.17: Create PostingService for transaction-safe ledger posting
-- Task 3.18: Implement posting: create LedgerEntry records, update ChartAccount balances
-- Task 3.19: Implement posting within database transaction for consistency
-- Task 3.20: Create Ledger/Index page showing account ledger with date/amount filtering
-- Task 3.21: Create Ledger/ByJournal page showing all accounts affected by a posted entry
-- Task 3.22: Implement post reference (PR) navigation from ledger to source journal entry
-- Task 3.23: Implement file upload on Journal/Details page
-- Task 3.24: Configure 25 MB maximum upload size in Program.cs FormOptions
-- Task 3.25: Restrict file types to PDF, DOC, DOCX, XLS, XLSX, CSV, JPG, JPEG, PNG
-- Task 3.26: Implement random filename generation for stored files
-- Task 3.27: Integrate event logging for approval, rejection, and posting actions
+- [DONE] Task 3.1: Create JournalEntry model with status workflow (Pending, Approved, Rejected, Posted)
+- [DONE] Task 3.2: Create JournalLine model with debit/credit amounts and account reference
+- [DONE] Task 3.3: Create JournalAttachment model for file metadata storage
+- [DONE] Task 3.4: Create LedgerEntry model with running balance tracking
+- [DONE] Task 3.5: Generate EF Core migration for journal and ledger tables
+- [DONE] Task 3.6: Create Journal/Create page with dynamic multi-line form
+- [DONE] Task 3.7: Implement debit/credit balance validation (totals must match)
+- [DONE] Task 3.8: Implement validation for at least one debit and one credit line
+- [DONE] Task 3.9: Implement validation preventing both debit and credit on same line
+- [DONE] Task 3.10: Implement validation ensuring all referenced accounts are active
+- [DONE] Task 3.11: Implement zero-amount line filtering before save
+- [DONE] Task 3.12: Create Journal/Index page with status, date, and search filtering
+- [DONE] Task 3.13: Create Journal/Details page with lines, totals, and attachment list
+- [DONE] Task 3.14: Create Journal/Approve page (Manager only) with approve/reject actions
+- [DONE] Task 3.15: Implement rejection with required manager comment
+- [DONE] Task 3.16: Create AccountingMath.SignedImpact() for proper debit/credit balance calculation
+- [DONE] Task 3.17: Create PostingService for transaction-safe ledger posting
+- [DONE] Task 3.18: Implement posting: create LedgerEntry records, update ChartAccount balances
+- [DONE] Task 3.19: Implement posting within database transaction for consistency
+- [DONE] Task 3.20: Create Ledger/Index page showing account ledger with date/amount filtering
+- [DONE] Task 3.21: Create Ledger/ByJournal page showing all accounts affected by a posted entry
+- [DONE] Task 3.22: Implement post reference (PR) navigation from ledger to source journal entry
+- [DONE] Task 3.23: Implement file upload on Journal/Details page
+- [DONE] Task 3.24: Configure 25 MB maximum upload size in Program.cs FormOptions
+- [DONE] Task 3.25: Restrict file types to PDF, DOC, DOCX, XLS, XLSX, CSV, JPG, JPEG, PNG
+- [DONE] Task 3.26: Implement random filename generation for stored files
+- [DONE] Task 3.27: Integrate event logging for approval, rejection, and posting actions
+- [DONE] Task 3.28 (added during Sprint 3/4): Send email notification to all Managers in the system outbox when a journal entry is submitted for approval
 
 ### Sprint 4 - Adjusting Entries and Financial Reports
 
-- Task 4.1: Implement adjusting entries (special journal entries for period-end)
-- Task 4.2: Create trial balance report page (accounts with non-zero balances, verify debits = credits)
-- Task 4.3: Create income statement report page (revenue - expenses for date range)
-- Task 4.4: Create balance sheet report page (assets = liabilities + equity at a date)
-- Task 4.5: Create retained earnings statement page (beginning RE + net income - dividends)
-- Task 4.6: Implement date range selection for all financial reports
-- Task 4.7: Implement report generation logic using ledger data
-- Task 4.8: Add save, print, and email options for reports
-- Task 4.9: Integrate report pages into navigation menu
+- [PARTIAL] Task 4.1: Implement adjusting entries (special journal entries for period-end) - IsAdjusting boolean flag added to JournalEntry model and exposed as a checkbox on the Create form; no separate adjusting entry type or workflow page was created
+- [DONE] Task 4.2: Create trial balance report page (Pages/Reports/TrialBalance) - displays active accounts with debit/credit columns and totals
+- [DONE] Task 4.3: Create income statement report page (Pages/Reports/IncomeStatement) - displays IS-statement accounts with Net Income footer
+- [DONE] Task 4.4: Create balance sheet report page (Pages/Reports/BalanceSheet) - displays BS-statement accounts with as-of date filter
+- [DONE] Task 4.5: Create retained earnings statement page (Pages/Reports/RetainedEarnings) - displays RE-statement accounts
+- [PARTIAL] Task 4.6: Implement date range selection for all financial reports - date picker inputs are present in all report views and parameters are bound in page models and service method signatures; however, the FinancialReportService queries do not apply the date range to the database queries
+- [DONE] Task 4.7: Implement report generation logic using account balance data via FinancialReportService
+- [DONE] Task 4.8: Add save (Export CSV), print (window.print()), and email (to outbox) options for all reports
+- [DONE] Task 4.9: Integrate report pages into navigation menu - Reports link added to nav bar for Manager role
 
 ### Sprint 5 - Dashboard and Ratio Analysis
 
-- Task 5.1: Implement financial ratio calculations from ledger/account data
-- Task 5.2: Define green/yellow/red thresholds for each ratio
-- Task 5.3: Create color-coded ratio display on dashboard/landing page
-- Task 5.4: Add role-appropriate notification section to landing page
-- Task 5.5: Add quick-access navigation buttons per role on dashboard
-- Task 5.6: Final integration testing across all modules
-- Task 5.7: Cross-browser compatibility testing (Chrome, Firefox, Edge, Safari)
-- Task 5.8: Final documentation review and completion
+- [DEFERRED] Task 5.1: Implement financial ratio calculations from ledger/account data - no ratio code exists in the codebase
+- [DEFERRED] Task 5.2: Define green/yellow/red thresholds for each ratio - not implemented
+- [DEFERRED] Task 5.3: Create color-coded ratio display on dashboard/landing page - not implemented
+- [DONE] Task 5.4: Add role-appropriate notification section to landing page - implemented in Sprint 1; notifications show pending, approved, and rejected journal entry counts per role
+- [DONE] Task 5.5: Add quick-access navigation buttons per role on dashboard - implemented in Sprint 1
+- [DONE] Task 5.6: Final integration testing across all modules - completed prior to final submission
+- [DONE] Task 5.7: Cross-browser compatibility testing (Chrome, Firefox, Edge, Safari) - completed per SDT Section 7
+- [DONE] Task 5.8: Final documentation review and completion - completed as part of end-of-semester refresh
 
 ---
 
